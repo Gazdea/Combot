@@ -1,37 +1,38 @@
-from db.connection import log_message
-from handlers.handler import Handler
+from handlers.handler import Handler, delete_message, kick, mute, unmute
+from aiogram import types
 
 class Moderator(Handler):
     
-    def start(self, bot, message):
+    async def start(self, message: types.Message):
         """Приветствие для модератора."""
-        bot.send_message(message.chat.id, "Привет, модератор! Чем могу помочь?")
+        await message.answer("Привет, модератор! Чем могу помочь?")
         
-    def help(self, bot, message):
+    async def help(self, message: types.Message):
         """Вывод справки."""
         help_text = """
         Доступные команды:
         /start - Начать работу с ботом
         /help - Получить справку
         /info - Получить информацию о боте
-        /delete_message - Удалить сообщение по ID
+        /delete - Удалить сообщение (ответьте на сообщение, которое хотите удалить)
+        /mute - Заглушить пользователя (ответьте на сообщение пользователя)
+        /unmute - Снять заглушение с пользователя (ответьте на сообщение пользователя)
+        /kick - Выгнать пользователя
         """
-        bot.send_message(message.chat.id, help_text)
+        await message.answer(help_text)
 
-    @staticmethod
-    def delete_message(bot, message):
-        """Удаление сообщения по ID (только модератор)."""
-        try:
-            message_id = int(message.text.split()[1])  # Ожидается, что модератор введет команду в формате /delete_message <message_id>
-            bot.delete_message(message.chat.id, message_id)
-            bot.send_message(message.chat.id, f"Сообщение {message_id} удалено.")
-            log_message(message.from_user.id, f"Deleted message {message_id}", message_type="moderation")
-        except (IndexError, ValueError):
-            bot.send_message(message.chat.id, "Используйте правильный формат команды: /delete_message <message_id>")
-        except Exception as e:
-            bot.send_message(message.chat.id, f"Ошибка при удалении сообщения: {e}")
-    
-    @staticmethod
-    def add_user(bot, message):
-        """
-        """
+    async def delete_message(self, message: types.Message):
+        """Удаление сообщения."""
+        await delete_message(message)
+
+    async def mute(self, message: types.Message):
+        """Заглушить пользователя."""
+        await mute(message)
+
+    async def unmute(self, message: types.Message):
+        """Снять мут с пользователя."""
+        await unmute(message)
+
+    async def kick(self, message: types.Message):
+        """Выгнать пользователя"""
+        await kick(message)

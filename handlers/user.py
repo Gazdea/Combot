@@ -1,12 +1,12 @@
 from handlers.handler import Handler
+from aiogram import types
 
-class user(Handler):
-    
-    def start(self, bot, message):
+class User(Handler):  # Измените название класса на 'User' для соблюдения PEP 8
+    async def start(self, message: types.Message):
         """Приветствие для обычного пользователя."""
-        bot.send_message(message.chat.id, f"Привет, {message.from_user.first_name}!")
+        await message.answer(f"Привет, {message.from_user.first_name}!")
 
-    def help(self, bot, message):
+    async def help(self, message: types.Message):
         """Вывод справки."""
         help_text = """
         Доступные команды:
@@ -14,5 +14,4 @@ class user(Handler):
         /help - Получить справку
         /info - Получить информацию о боте
         """
-        bot.send_message(message.chat.id, help_text)
-
+        await message.answer(help_text)

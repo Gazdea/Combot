@@ -1,57 +1,50 @@
-from db.connection import add_user, remove_user
-from handlers.handler import Handler  # Если handler — это класс, его нужно правильно импортировать
-from handlers.moderator import Moderator  # Если moderator — это класс
+from handlers.handler import Handler, ban, delete_message, kick, mute, unban, unmute  # Импортируем базовый класс Handler
+from aiogram import types
 
 class Admin(Handler):
     def __init__(self):
         super().__init__()
-        self.moderator = Moderator()  # Создаем объект модератора
     
-    def start(self, bot, message):
+    async def start(self, message: types.Message):
         """Приветствие для админа."""
-        bot.send_message(message.chat.id, "Привет, админ! Что хотите сделать?")
+        await message.answer("Привет, админ! Что хотите сделать?")
         
-    def help(self, bot, message):
+    async def help(self, message: types.Message):
         """Вывод справки по доступным командам для админа."""
         help_text = """
         Доступные команды:
         /start - Начать работу с ботом
         /help - Получить справку
         /info - Получить информацию о боте
-        /add_moderator - Добавить модератора по ID
-        /remove_user - Удаление пользователя по ID
-        /delete_message - Удалить сообщение (доступно также для модераторов)
+        /kick - Выгнать пользователя (ответом на сообщение или через упоминание)
+        /mute - Заглушить пользователя (ответом на сообщение или через упоминание)
+        /unmute - Снять заглушение с пользователя (ответом на сообщение или через упоминание)
+        /ban - Забанить пользователя (ответом на сообщение или через упоминание)
+        /unban - Разбанить пользователя (ответом на сообщение или через упоминание)
+        /delete - Удалить сообщение (доступно также для модераторов)
         """
-        bot.send_message(message.chat.id, help_text)
+        await message.answer(help_text)
 
-    def delete_message(self, bot, message):
-        """Администратор может использовать метод модератора для удаления сообщения."""
-        self.moderator.delete_message(bot, message)
-    
-    @staticmethod
-    def add_moderator(bot, message):
-        """Добавление модератора по ID пользователя."""
-        try:
-            # Ожидается команда в формате /add_moderator <user_id>
-            user_id = int(message.text.split()[1])
-            add_user(user_id, username=None, chat_id=None, role_name="moderator")
-            bot.send_message(message.chat.id, f"Пользователь {user_id} теперь модератор.")
-        except (IndexError, ValueError):
-            bot.send_message(message.chat.id, "Используйте правильный формат команды: /add_moderator <user_id>")
-        except Exception as e:
-            bot.send_message(message.chat.id, f"Произошла ошибка: {e}")
+    async def delete_message(self, message: types.Message):
+        """Удалить сообщение."""
+        await delete_message(message)
 
-    @staticmethod
-    def remove_user(bot, message):
-        """Удаление пользователя по ID."""
-        try:
-            # Ожидается команда в формате /remove_user <user_id>
-            user_id = int(message.text.split()[1])
-            if remove_user(user_id):
-                bot.send_message(message.chat.id, f"Пользователь {user_id} удален.")
-            else:
-                bot.send_message(message.chat.id, f"Пользователь {user_id} не найден.")
-        except (IndexError, ValueError):
-            bot.send_message(message.chat.id, "Используйте правильный формат команды: /remove_user <user_id>")
-        except Exception as e:
-            bot.send_message(message.chat.id, f"Произошла ошибка: {e}")
+    async def kick(self, message: types.Message):
+        """Выгнать пользователя."""
+        await kick(message)
+
+    async def mute(self, message: types.Message):
+        """Заглушить пользователя."""
+        await mute(message)
+
+    async def unmute(self, message: types.Message):
+        """Снять мут с пользователя."""
+        await unmute(message)
+
+    async def ban(self, message: types.Message):
+        """Забанить пользователя."""
+        await ban(message)
+
+    async def unban(self, message: types.Message):
+        """Разбанить пользователя."""
+        await unban(message)

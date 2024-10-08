@@ -1,17 +1,15 @@
 import os
-import re
 import logging
-import threading
-from time import time
-from collections import defaultdict
 from dotenv import load_dotenv
-import telebot
+from aiogram import Bot, Dispatcher, types
+from aiogram.utils import executor
 
 # Импорт модулей приложения
-from db.connection import add_chat_and_users, get_user_role, add_user
+from db.connection import DBConnectionPool, get_user_role
 from handlers.admin import Admin
 from handlers.moderator import Moderator
-from handlers.user import user
+from handlers.user import User
+from handlers.bot import BotHandler
 
 # Настройка логирования
 logging.basicConfig(
@@ -31,13 +29,17 @@ if not TOKEN:
     logging.error("Токен бота не установлен. Проверьте переменные окружения.")
     exit(1)
 
-# Создание бота
-bot = telebot.TeleBot(TOKEN)
+# Инициализация пула соединений
+DBConnectionPool.initialize()
+
+# Создание объектов бота и диспетчера
+bot = Bot(TOKEN)  # Исправлено здесь
+dp = Dispatcher(bot)
 
 # Функция уведомления админа
-def notify_admin(bot, message):
+async def notify_admin(message):
     if ADMIN_CHAT_ID:
-        bot.send_message(ADMIN_CHAT_ID, message)
+        await bot.send_message(ADMIN_CHAT_ID, message)
     else:
         logging.warning("ADMIN_CHAT_ID не установлен. Невозможно отправить сообщение админу.")
 
@@ -46,115 +48,97 @@ def notify_admin(bot, message):
 # ===============================
 class HandlerFactory:
     @staticmethod
-    def get_handler(message):
+    async def get_handler(message: types.Message):
         """Возвращает обработчик на основе роли пользователя"""
         user_id = message.from_user.id
-        role = get_user_role(user_id)
+        role = await get_user_role(user_id)
         
         if role == 'admin':
             return Admin()
         elif role == 'moderator':
             return Moderator()
+        elif role == 'user':
+            return User()
         else:
-            return user()
+            await handler_bot.welcome_new_member(message)
+            return None
+
+handler_bot = BotHandler()
 
 # ===============================
 # Обработчики команд
 # ===============================
-@bot.message_handler(commands=['start'])
-def start_command(message):
-    handler = HandlerFactory.get_handler(message)
-    handler.start(bot, message)
+@dp.message_handler(commands=['start'])
+async def start_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.start(message)
 
-@bot.message_handler(commands=['help'])
-def help_command(message):
-    handler = HandlerFactory.get_handler(message)
-    handler.help(bot, message)
+@dp.message_handler(commands=['help'])
+async def help_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.help(message)
 
-@bot.message_handler(commands=['info'])
-def info_command(message):
-    handler = HandlerFactory.get_handler(message)
-    handler.info(bot, message)
+@dp.message_handler(commands=['info'])
+async def info_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.info(message)
 
-@bot.message_handler(commands=['add_moderator'])
-def add_moderator_command(message):
-    handler = HandlerFactory.get_handler(message)
-    handler.add_moderator(bot, message)
+@dp.message_handler(commands=['kick'])
+async def kick_user_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.kick(message)
 
-@bot.message_handler(commands=['remove_user'])
-def remove_user_command(message):
-    handler = HandlerFactory.get_handler(message)
-    handler.remove_user(bot, message)
+@dp.message_handler(commands=['mute'])
+async def mute_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.mute(message)
 
-@bot.message_handler(commands=['delete_message'])
-def delete_message_command(message):
-    handler = HandlerFactory.get_handler(message)
-    handler.delete_message(bot, message)
+@dp.message_handler(commands=['unmute'])
+async def unmute_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.unmute(message)
 
-# ===============================
-# Приветственные сообщения
-# ===============================
-@bot.message_handler(content_types=['new_chat_members'])
-def welcome_new_member(message):
-    if not message.new_chat_members:
-        logging.warning("new_chat_members is None or empty")
-        return
-    
-    for new_user in message.new_chat_members:
-        if new_user.id == bot.get_me().id:
-            chat_id = message.chat.id
-            bot.send_message(chat_id, "Бот добавлен в этот чат! Привет!")
-            members = bot.get_chat_administrators(chat_id)
-            add_chat_and_users(chat_id, [member.user for member in members])
-            logging.info(f"Бот добавлен в чат {chat_id}, пользователи добавлены в БД.")
-        else:
-            add_user(new_user, message.chat.id)
-            welcome_text = f"Привет, {new_user.first_name}! Добро пожаловать в наш чат."
-            bot.send_message(message.chat.id, welcome_text)
+@dp.message_handler(commands=['ban'])
+async def ban_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.ban(message)
 
-# ===============================
-# Защита от спама
-# ===============================
-spams = {}
-msgs = 4  # Количество сообщений
-max_time = 5  # Время в секундах
-ban_time = 300  # Время бана в секундах
+@dp.message_handler(commands=['unban'])
+async def unban_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.unban(message)
 
-def is_spam(user_id):
-    current_time = int(time())
-    
-    if user_id in spams:
-        usr = spams[user_id]
-        if usr["banned"] > current_time:
-            logging.info(f"Пользователь {user_id} забанен.")
-            return True
-        
-        if usr["next_time"] > current_time:
-            usr["messages"] += 1
-            if usr["messages"] >= msgs:
-                usr["banned"] = current_time + ban_time
-                logging.info(f"Пользователь {user_id} забанен за спам.")
-                return True
-        else:
-            usr["messages"] = 1
-            usr["next_time"] = current_time + max_time
-    else:
-        spams[user_id] = {"next_time": current_time + max_time, "messages": 1, "banned": 0}
-    
-    return False
+@dp.message_handler(commands=['delete'])
+async def delete_message_command(message: types.Message):
+    handler = await HandlerFactory.get_handler(message)
+    if handler:
+        await handler.delete_message(message)
 
-@bot.message_handler(func=lambda message: True)
-def handle_message(message):
-    user_id = message.from_user.id
-    if is_spam(user_id):
-        bot.send_message(message.chat.id, "Вы забанены за спам. Пожалуйста, подождите перед отправкой сообщений.")
+@dp.message_handler(content_types=['new_chat_members'])
+async def welcome_new_member(message: types.Message):
+    await handler_bot.welcome_new_member(message)
+
+@dp.message_handler()
+async def handle_message(message: types.Message):
+    await handler_bot.is_spam(message)
 
 # ===============================
 # Запуск бота
 # ===============================
-try:
-    logging.info("Бот запущен.")
-    bot.infinity_polling()
-except Exception as e:
-    logging.error(f"Ошибка в бот-поллинге: {e}")
-    notify_admin(bot, f"Критическая ошибка: {e}")
+async def on_startup(dp):
+    await DBConnectionPool.initialize()
+
+if __name__ == "__main__":
+    try:
+        logging.info("Бот запущен.")
+        executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+    except Exception as e:
+        logging.error(f"Ошибка в бот-поллинге: {e}")
