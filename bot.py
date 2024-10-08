@@ -128,7 +128,8 @@ async def welcome_new_member(message: types.Message):
 
 @dp.message_handler()
 async def handle_message(message: types.Message):
-    await handler_bot.is_spam(message)
+    await handler_bot.anti_spam_protection(message)
+    await handler_bot.remove_links(message)
 
 # ===============================
 # Запуск бота

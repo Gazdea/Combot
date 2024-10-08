@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 import asyncio
-from db.connection import get_user_id
+from db.connection import get_user_id,  add_chat_and_users, add_user
 import time
 from aiogram import types
+import re
 
 class Handler(ABC):
     
@@ -64,8 +65,9 @@ async def _get_user_id_from_message(message: types.Message):
         for entity in message.entities:
             if entity.type == 'mention':
                 username = message.text[entity.offset:entity.offset + entity.length].lstrip('@')
+                chat_id = message.chat.id
                 try:
-                    user_id = await get_user_id(username)
+                    user_id = await get_user_id(username, chat_id)
                 except Exception as e:
                     print(f"Ошибка при получении пользователя по имени: {e}")
     
@@ -138,7 +140,7 @@ async def mute(message: types.Message, mute_time=3600):
             await message.answer("Пользователь размьючен.")
             
         except Exception as e:
-            await message.answer(f"Ошибка при мутации: {e}")
+            await message.answer(f"Ошибка при муте: {e}")
     else:
         await message.answer("Ответьте на сообщение пользователя, которого хотите заглушить.")
 
@@ -183,3 +185,52 @@ async def unban(message: types.Message):
             await message.answer(f"Ошибка при разбане: {e}")
     else:
         await message.answer("Ответьте на сообщение пользователя, которого хотите разбанить.")
+
+# Хранение времени отправки сообщений пользователями
+user_message_times = {}
+
+async def anti_spam_protection(message: types.Message, mute_time, max_messages, time_window):
+    """Защита от спама: если пользователь отправляет больше max_messages за time_window секунд, он заглушается."""
+    user_id = message.from_user.id
+    current_time = time.time()
+
+    # Инициализируем запись для пользователя, если её ещё нет
+    if user_id not in user_message_times:
+        user_message_times[user_id] = []
+
+    # Убираем устаревшие записи, которые вышли за пределы временного окна
+    user_message_times[user_id] = [timestamp for timestamp in user_message_times[user_id] if current_time - timestamp < time_window]
+
+    # Добавляем текущее время отправки сообщения
+    user_message_times[user_id].append(current_time)
+
+    # Если сообщений больше, чем разрешено, заглушаем пользователя
+    if len(user_message_times[user_id]) > max_messages:
+        message.text = message.from_user.id
+        await mute(message, mute_time)
+        return True
+    return False
+
+# Регулярное выражение для обнаружения ссылок
+LINK_REGEX = r"(https?://[^\s]+)"
+
+async def remove_links(message: types.Message):
+    """Удаляет сообщения, содержащие ссылки."""
+    if re.search(LINK_REGEX, message.text):
+        try:
+            await message.bot.delete_message(message.chat.id, message.message_id)
+            await message.answer("Сообщения с ссылками запрещены.")
+        except Exception as e:
+            await message.answer(f"Ошибка при удалении сообщения с ссылкой: {e}")
+            
+async def welcome_new_member(message: types.Message):
+    for new_user in message.new_chat_members:
+        if new_user.id == message.bot.id:
+            chat_id = message.chat.id
+            await message.bot.send_message(chat_id, "Бот добавлен в этот чат! Привет!")
+            members = await message.bot.get_chat_administrators(chat_id)
+            await add_chat_and_users(chat_id, [member.user for member in members])
+        else:
+            await add_user(new_user, message.chat.id)
+            welcome_text = f"Привет, {new_user.first_name}! Добро пожаловать в наш чат."
+            await message.bot.send_message(message.chat.id, welcome_text)

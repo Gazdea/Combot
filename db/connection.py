@@ -127,14 +127,14 @@ async def get_user_role(user_id):
     finally:
         await DBConnectionPool.return_connection(conn)
 
-async def get_user_id(user_tag):
+async def get_user_id(user_tag, chat_id):
     """Получить id пользователя по его нику"""
     conn = await DBConnectionPool.get_connection()
     try:
-        user_id = await conn.fetchval("""
-            SELECT id FROM users
-            WHERE username = $1;
-        """, user_tag)
+        user_id = await conn.fetchval("""SELECT users.id FROM users
+            JOIN user_chats ON users.id = user_chats.user_id
+            WHERE users.username = $1 AND user_chats.chat_id = $2;
+        """, user_tag, chat_id)
         return user_id
     except Exception as e:
         logging.error(f"Ошибка получения id пользователя: {e}")
