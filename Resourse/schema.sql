@@ -32,8 +32,7 @@ CREATE TABLE IF NOT EXISTS role_permissions (
 -- Таблица для пользователей
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT PRIMARY KEY,                   -- Уникальный идентификатор пользователя
-    username TEXT,                           -- Имя пользователя
-    join_date TIMESTAMP DEFAULT NOW()        -- Дата присоединения
+    username TEXT                           -- Имя пользователя
 );
 
 -- Таблица для связей между пользователями и чатами (многие ко многим)
@@ -41,6 +40,7 @@ CREATE TABLE IF NOT EXISTS user_chats (
     user_id BIGINT REFERENCES users(id),    -- Внешний ключ на пользователя
     chat_id BIGINT REFERENCES chats(id),    -- Внешний ключ на чат
     role_id BIGINT REFERENCES roles(id),    -- Внешний ключ на роль, которую пользователь выполняет в чате
+    join_date TIMESTAMP DEFAULT NOW(),      -- Дата присоединения
     PRIMARY KEY (user_id, chat_id),         -- Уникальная комбинация пользователя и чата (у пользователя может быть только одна роль в одном чате)
     UNIQUE (user_id, chat_id)               -- Уникальность связи пользователя с чатом
 );

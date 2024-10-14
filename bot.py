@@ -1,12 +1,13 @@
 import os
 import logging
 import asyncio
+from Connection.SQLAlchemy import DBConnection
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
 from aiogram.utils import executor
 
 # Импорт модулей приложения
-from handlers.handler import Handlers
+from Handler.Handler import Handlers
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -27,18 +28,19 @@ dp = Dispatcher(bot)
 # Обработчики команд
 # ===============================
 
-@dp.message_handler(commands=['start', 'help', 'mute', 'kick', 'unban', 'delete', 'info', 'ban', 'unmute'])
+@dp.message_handler(lambda message: message.text.startswith('/'))
 async def handle_command(message: types.Message):
-    await Handlers(message).execute_command()
+    await Handlers().execute_command(message)
 
 @dp.message_handler(content_types=['new_chat_members'])
 async def new_member(message: types.Message):
-    await Handlers(message).welcome_new_member()
+    await Handlers().welcome_new_member(message)
 
 @dp.message_handler()
 async def handle_message(message: types.Message):
-    await Handlers(message).anti_spam_protection()
-    await Handlers(message).remove_links()
+    """"""
+    # await Handlers().anti_spam_protection(message)
+    await Handlers().remove_links(message)
 
 # ===============================
 # Запуск бота

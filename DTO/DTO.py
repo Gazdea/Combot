@@ -1,29 +1,33 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-class RoleDTO(BaseModel):
+class Role(BaseModel):
     id: int
     role_name: str
     chat_id: int
 
-class CommandDTO(BaseModel):
+class Command(BaseModel):
     id: int
     command: str
     command_name: str
     description: str
     chat_id: int
 
-class UserDTO(BaseModel):
+class RolePermission(BaseModel):
+    role_id: int
+    command_id: int
+
+class User(BaseModel):
     id: int
     username: str
-    join_date: str
 
-class UserChatDTO(BaseModel):
+class UserChat(BaseModel):
     user_id: int
     chat_id: int
     role_id: int
+    join_date: str
 
-class MessageDTO(BaseModel):
+class Message(BaseModel):
     id: int
     user_id: int
     chat_id: int
@@ -31,8 +35,6 @@ class MessageDTO(BaseModel):
     message_type: str
     date: str
 
-class ChatDTO(BaseModel):
+class Chat(BaseModel):
     id: int
     chat_name: str
-    roles: List[RoleDTO] = []
-    commands: List[CommandDTO] = []

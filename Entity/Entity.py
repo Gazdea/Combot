@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, BigInteger, ForeignKey, Text, TIMESTAMP
+from sqlalchemy import create_engine, Column, Integer, String, BigInteger, ForeignKey, Text, TIMESTAMP, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 Base = declarative_base()
@@ -50,7 +50,6 @@ class User(Base):
 
     id = Column(BigInteger, primary_key=True)
     username = Column(Text)
-    join_date = Column(TIMESTAMP)
 
     user_chats = relationship('UserChat', back_populates='user')
 
@@ -60,6 +59,7 @@ class UserChat(Base):
     user_id = Column(BigInteger, ForeignKey('users.id'), primary_key=True)
     chat_id = Column(BigInteger, ForeignKey('chats.id'), primary_key=True)
     role_id = Column(Integer, ForeignKey('roles.id'))
+    join_date = Column(TIMESTAMP, default=func.now())
 
     user = relationship('User', back_populates='user_chats')
     chat = relationship('Chat', back_populates='user_chats')
