@@ -34,8 +34,7 @@ class Services:
     def new_chat(self, chat_id, chat_name):
         return self.chat_repo.create_chat(DTO.Chat(
             id=chat_id,
-            chat_name=chat_name,
-            created_at=date.today().isoformat()  # Добавляем дату создания
+            chat_name=chat_name
         ))
     
     def add_user(self, user_id, username):
