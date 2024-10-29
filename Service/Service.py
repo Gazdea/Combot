@@ -1,9 +1,10 @@
 from datetime import date
+from typing import Optional
 from aiogram import types
 from sqlalchemy import true
 
 from DTO import DTO
-from Repository.Repository import ChatRepository, CommandRepository, MessageRepository, RoleRepository, UserRepository
+from Repository.Repository import ChatRepository, CommandRepository, MessageRepository, RoleRepository, UserRepository, mutedUserRepository
 
 class Services:
     def __init__(self):
@@ -12,6 +13,7 @@ class Services:
         self.role_repo = RoleRepository()
         self.comd_repo = CommandRepository()
         self.mesg_repo = MessageRepository()
+        self.mute_repo = mutedUserRepository()
     
     def get_commands_by_chat(self, chat_id):
         return self.comd_repo.get_commands_by_chat(chat_id)
@@ -30,11 +32,25 @@ class Services:
 
     def get_messages_by_chat_user(self, chat_id, user_id):
         return self.mesg_repo.get_messages(chat_id, user_id)
-        
+    
+    def save_message(self, message_id, chat_id, user_id, message, message_type, date):
+        return self.mesg_repo.create_message(DTO.Message(
+            message_id=message_id,
+            user_id=user_id,
+            chat_id=chat_id,
+            message=message,
+            message_type=message_type,
+            date=date
+        ))
+    
     def new_chat(self, chat_id, chat_name):
         return self.chat_repo.create_chat(DTO.Chat(
             id=chat_id,
-            chat_name=chat_name
+            chat_name=chat_name,
+            spam_mute_time=60,
+            spam_message=10,
+            spam_time=10,
+            delete_pattern="http[s]?://\S+|www\.\S+"
         ))
     
     def add_user(self, user_id, username):
@@ -54,3 +70,6 @@ class Services:
         ))
         if user_chat:
             return true
+        
+    def get_mute_user(self, user_id, chat_id):
+        return self.mute_repo.get_user_mute_by_chat_user(chat_id, user_id)

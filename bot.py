@@ -1,10 +1,8 @@
 import os
 import logging
 import asyncio
-from Connection.SQLAlchemy import DBConnection
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
-from aiogram.utils import executor
 
 # Импорт модулей приложения
 from Handler.Handler import Handlers
@@ -22,7 +20,7 @@ if not TOKEN:
 
 # Создание объектов бота и диспетчера
 bot = Bot(TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher(bot=bot)
 
 # ===============================
 # Обработчики команд
@@ -39,9 +37,9 @@ async def new_member(message: types.Message):
 @dp.message_handler()
 async def handle_message(message: types.Message):
     """"""
-    # await Handlers().anti_spam_protection(message)
+    await Handlers().save_message(message)
     await Handlers().remove_links(message)
-
+    await Handlers().anti_spam_protection(message)
 # ===============================
 # Запуск бота
 # ===============================

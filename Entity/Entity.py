@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, BigInteger, ForeignKey, Text, TIMESTAMP, func
+from sqlalchemy import Float, Column, Integer, BigInteger, ForeignKey, Text, TIMESTAMP, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 Base = declarative_base()
@@ -8,6 +8,10 @@ class Chat(Base):
 
     id = Column(BigInteger, primary_key=True)
     chat_name = Column(Text)
+    spam_mute_time = Column(Float, default=60)
+    spam_message = Column(Integer, default=10)
+    spam_time = Column(Integer, default=10)
+    delete_pattern = Column(Text, default="http[s]?://\S+|www\.\S+")
 
     roles = relationship('Role', back_populates='chat')
     commands = relationship('Command', back_populates='chat')
@@ -68,7 +72,8 @@ class UserChat(Base):
 class Message(Base):
     __tablename__ = 'messages'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    message_id = Column(Integer)
     user_id = Column(BigInteger, ForeignKey('users.id'))
     chat_id = Column(BigInteger, ForeignKey('chats.id'))
     message = Column(Text)
@@ -77,3 +82,12 @@ class Message(Base):
 
     user = relationship('User')
     chat = relationship('Chat', back_populates='messages')
+
+class MutedUsers(Base):
+    __tablename__ = 'muted_users'
+    
+    user_id = Column(Integer, primary_key=True)
+    chat_id = Column(Integer, primary_key=True)
+    mute_end = Column(TIMESTAMP)
+
+    

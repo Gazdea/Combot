@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import logging
 from Entity import Entity
 from DTO import DTO
@@ -11,6 +11,10 @@ class Mapper:
         result = DTO.Chat(
             id=chat.id,
             chat_name=chat.chat_name,
+            spam_mute_time=chat.spam_mute_time,
+            spam_message=chat.spam_message,
+            spam_time=chat.spam_time,
+            delete_pattern=chat.delete_pattern
         )
         logging.debug(f'Resulting DTO: {result}')
         return result
@@ -48,6 +52,7 @@ class Mapper:
         logging.debug(f'Mapping Message Entity to DTO: {message}')
         return DTO.Message(
             id=message.id,
+            message_id=message.message_id,
             user_id=message.user_id,
             chat_id=message.chat_id,
             message=message.message,
@@ -74,11 +79,24 @@ class Mapper:
         )
 
     @staticmethod
+    def mutedUser_to_dto(muted_user: Entity.MutedUsers) -> DTO.MutedUsers:
+        logging.debug(f'Mapping mutedUser Enttity to DTO: {muted_user}')
+        return DTO.MutedUsers(
+            user_id=muted_user.user_id,
+            chat_id=muted_user.chat_id,
+            mute_end=muted_user.mute_end.isoformat() if muted_user.mute_end else None
+        )
+    
+    @staticmethod
     def chat_to_entity(chat: DTO.Chat) -> Entity.Chat:
         logging.debug(f'Mapping Chat DTO to Entity {chat}')
         return Entity.Chat(
             id=chat.id,
             chat_name=chat.chat_name,
+            spam_mute_time=chat.spam_mute_time,
+            spam_message=chat.spam_message,
+            spam_time=chat.spam_time,
+            delete_pattern=chat.delete_pattern
         )
 
     @staticmethod
@@ -113,12 +131,12 @@ class Mapper:
     def message_to_entity(message: DTO.Message) -> Entity.Message:
         logging.debug(f'Mapping Message DTO to Entity {message}')
         return Entity.Message(
-            id=message.id,
+            message_id=message.message_id,
             user_id=message.user_id,
             chat_id=message.chat_id,
             message=message.message,
             message_type=message.message_type,
-            date=date.fromisoformat(message.date) if message.date else None
+            date=datetime.fromisoformat(message.date) if message.date else None
         )
 
     @staticmethod
@@ -137,4 +155,13 @@ class Mapper:
         return Entity.RolePermission(
             role_id=role_permision.role_id,
             command_id=role_permision.command_id
+        )
+        
+    @staticmethod
+    def mutedUsers_to_entity(muted_user: DTO.MutedUsers) -> Entity.MutedUsers:
+        logging.debug(f'Mapping mutedUser Enttity to DTO: {muted_user}')
+        return Entity.MutedUsers(
+            user_id=muted_user.user_id,
+            chat_id=muted_user.chat_id,
+            mute_end=datetime.fromisoformat(muted_user.mute_end) if muted_user.mute_end else None
         )
