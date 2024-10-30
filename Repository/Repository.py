@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime
 import logging
-from typing import List, Optional
+from typing import List, Optional, Generator
 from contextlib import contextmanager
+
 from Entity.Entity import Chat, Role, Command, RolePermission, User, Message, UserChat, MutedUsers
 from Connection.SQLAlchemy import DBConnection
 from sqlalchemy.orm import Session
@@ -10,7 +11,7 @@ from Mapper.Mapper import Mapper
 
 class RepositoryBase:
     @contextmanager
-    def session_scope(self) -> Session:
+    def session_scope(self)-> Generator[Session, None, None]:
         """Контекстный менеджер для работы с сессией."""
         session = DBConnection.get_session()  # Создаем новую сессию для каждой транзакции
         try:
@@ -78,7 +79,14 @@ class RoleRepository(RepositoryBase):
         with self.session_scope() as session:
             user_chat = session.query(UserChat).filter(UserChat.chat_id == chat_id, UserChat.user_id == user_id).first()
             return Mapper.role_to_dto(user_chat.role) if user_chat else None  # Возвращаем DTO
-
+    
+    def delete_command_by_role(self, role_permision_dto) -> Optional[bool]:
+        role_permission = Mapper.role_per_to_entity(role_permision_dto)
+        with self.session_scope() as session:
+            session.delete(role_permission)
+            return True
+        return False
+    
     def get_role_by_name(self, chat_id: int, name: str) -> Optional[Role]:
         with self.session_scope() as session:
             return Mapper.role_to_dto(session.query(Role).filter(Role.chat_id == chat_id, Role.role_name == name).first())
@@ -159,6 +167,10 @@ class MessageRepository(RepositoryBase):
         with self.session_scope() as session:
             return [Mapper.message_to_dto(message) for message in session.query(Message).filter(Message.chat_id == chat_id, Message.user_id == user_id).all()]
 
+    def get_count_messages(self, chat_id: int, user_id: int, date_start: date, date_end: date) -> Optional[int]:
+        with self.session_scope() as session:
+            return session.query(Message).filter(Message.chat_id == chat_id, Message.user_id == user_id, Message.date >= date_start, Message.date <= date_end).count()
+
     def update_message(self, message_dto) -> Optional[Message]:
         message = Mapper.message_to_entity(message_dto)
         with self.session_scope() as session:
@@ -193,6 +205,13 @@ class CommandRepository(RepositoryBase):
         with self.session_scope() as session:
             return Mapper.command_to_dto(session.query(Command).filter(Command.id == command_id).first())
 
+    def get_command_by_name(self, chat_id, command_name) -> Optional[Command]:
+        with self.session_scope() as session:
+            return Mapper.command_to_dto(session.query(Command).filter(
+                Command.chat_id == chat_id, 
+                Command.command == '/' + command_name)
+            )
+            
     def get_commands_by_chat(self, chat_id: int) -> Optional[List[Command]]:
         with self.session_scope() as session:
             commands = session.query(Command).filter(Command.chat_id == chat_id).all()
@@ -217,9 +236,6 @@ class CommandRepository(RepositoryBase):
             existing_command = session.query(Command).filter(Command.id == command.id).first()
             if existing_command:
                 existing_command.command = command.command
-                existing_command.command_name = command.command_name
-                existing_command.description = command.description
-                existing_command.chat_id = command.chat_id
             return Mapper.command_to_dto(existing_command) if existing_command else None  # Возвращаем DTO
 
     def delete_command(self, command_id: int) -> Optional[bool]:
@@ -231,25 +247,54 @@ class CommandRepository(RepositoryBase):
             return False
 
 
-class mutedUserRepository(RepositoryBase):
-    def create_user_mute(self, muted_user_dto) -> Optional[MutedUsers]:
+class RolePermissionRepository(RepositoryBase):
+    def set_command_by_role(self, role_permision_dto) -> Optional[RolePermission]:
+        role_permission = Mapper.role_per_to_entity(role_permision_dto)
+        with self.session_scope() as session:
+            session.merge(role_permission)
+            session.flush()
+            return Mapper.role_per_to_dto(role_permission)
+
+
+class UserChatRepository(RepositoryBase):
+    def set_user_role(self, user_chat_dto: UserChat) -> Optional[UserChat]:
+        user_chat = Mapper.user_chat_to_entity(user_chat_dto)
+        with self.session_scope() as session:
+            session.merge(user_chat)
+            session.flush()
+            return Mapper.user_chat_to_dto(user_chat)
+    
+    def get_user_role(self, chat_id: int, user_id: int) -> Optional[UserChat]:
+        with self.session_scope() as session:
+            return Mapper.user_chat_to_dto(session.query(UserChat).filter(
+                UserChat.chat_id == chat_id, 
+                UserChat.user_id == user_id).first()
+            )
+
+    def get_join_users(self, chat_id: int, date_start: date, date_end: date) -> List[Optional[UserChat]]:
+        with self.session_scope() as session:
+            return [Mapper.user_chat_to_dto(user_chat for user_chat in session.query(UserChat).filter(UserChat.chat_id == chat_id, UserChat.join_date >= date_start, UserChat.join_date <= date_end).all)]
+
+
+class MutedUserRepository(RepositoryBase):
+    def create_user_mute(self, muted_user_dto: MutedUsers) -> Optional[MutedUsers]:
         muted_user = Mapper.message_to_entity(muted_user_dto)
         with self.session_scope() as session:
             session.merge(muted_user)
             session.flush()
             return Mapper.mutedUser_to_dto(muted_user)
         
-    def get_users_mute_by_chat(self, chat_id) -> List[Optional[MutedUsers]]:
+    def get_users_mute_by_chat(self, chat_id: int) -> List[Optional[MutedUsers]]:
         with self.session_scope() as session:
             muted_users = session.query(MutedUsers).filter(MutedUsers.chat_id == chat_id).all()
             return [Mapper.mutedUser_to_dto(muted_user) for muted_user in muted_users]
         
-    def get_user_mutes_by_chats(self, user_id) -> List[Optional[MutedUsers]]:
+    def get_user_mutes_by_chats(self, user_id: int) -> List[Optional[MutedUsers]]:
         with self.session_scope() as session:
             muted_users = session.query(MutedUsers).filter(MutedUsers.user_id == user_id).all()
             return [Mapper.mutedUser_to_dto(muted_user) for muted_user in muted_users]
         
-    def get_user_mute_by_chat_user(self, chat_id, user_id) -> Optional[MutedUsers]:
+    def get_user_mute_by_chat_user(self, chat_id: int, user_id: int) -> Optional[MutedUsers]:
         with self.session_scope() as session:
             muted_user = session.query(MutedUsers).filter(
                 MutedUsers.chat_id == chat_id,
@@ -257,3 +302,4 @@ class mutedUserRepository(RepositoryBase):
                 MutedUsers.mute_end > datetime.now()
             ).first()
             return Mapper.mutedUser_to_dto(muted_user) if muted_user else None
+        

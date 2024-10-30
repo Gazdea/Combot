@@ -51,22 +51,31 @@ CREATE TABLE IF NOT EXISTS user_chats (
 
 -- Таблица для сообщений
 CREATE TABLE IF NOT EXISTS messages (
-    id BIGSERIAL PRIMARY KEY,              -- Автоинкрементируемый первичный ключ
     message_id BIGINT,                     -- Уникальный идентификатор сообщения
     user_id BIGINT REFERENCES users(id),   -- Внешний ключ на пользователя
     chat_id BIGINT REFERENCES chats(id),   -- Внешний ключ на чат
     message TEXT,                          -- Текст сообщения
     message_type TEXT DEFAULT 'text',      -- Тип сообщения (например, текст, изображение)
-    date TIMESTAMP DEFAULT NOW()           -- Дата сообщения
+    date TIMESTAMP DEFAULT NOW(),           -- Дата сообщения
+    PRIMARY KEY (message_id, user_id, chat_id), -- уникальный ключ
 );
 
 CREATE TABLE IF NOT EXISTS muted_users (
-    user_id BIGINT,
-    chat_id BIGINT,
+    user_id BIGINT REFERENCES users(id),
+    chat_id BIGINT, REFERENCES chats(id)
     mute_end TIMESTAMP,
+    reason TEXT,
     PRIMARY KEY (user_id, chat_id),
-    FOREIGN KEY (chat_id) REFERENCES chats(id)
 );
+
+CREATE TABLE IF NOT EXISTS banned_users (
+    user_id BIGINT REFERENCES users(id),
+    chat_id BIGINT, REFERENCES chats(id)
+    ban_end TIMESTAMP,
+    reason TEXT,
+    PRIMARY KEY (user_id, chat_id),
+);
+
 
 CREATE OR REPLACE FUNCTION insert_standard_roles_and_commands()
         RETURNS TRIGGER AS $$
@@ -90,7 +99,20 @@ CREATE OR REPLACE FUNCTION insert_standard_roles_and_commands()
                 ('/delete', 'delete_message', 'Удалить сообщение пользователя', NEW.id),
                 ('/info', 'info', 'Информация о создателе', NEW.id),
                 ('/ban', 'ban', 'Забанить пользователя', NEW.id),
-                ('/unmute', 'unmute', 'Снять заглушение пользователя', NEW.id);
+                ('/unmute', 'unmute', 'Снять заглушение пользователя', NEW.id),
+                ('/chatSpamMuteTimeSet', 'chat_spam_mute_time_set', 'Установить время мута в чате', NEW.id),
+                ('/chatSpamNumMessageSet', 'chat_spam_mum_message_set', 'Установить колличество сообщения для мута', NEW.id),
+                ('/chatSpamTimeSet', 'chat_spam_time_set', 'Установить время подсчитывания сообщений', NEW.id),
+                ('/chatdeletePatternSet', 'chat_delete_pattern_set', 'Установить паттерн удаляемых сообщений', NEW.id),
+                ('/roleAdd', 'role_add', 'Добавить роль', NEW.id),
+                ('/roleDelete', 'role_delete', 'Удалить роль', NEW.id),
+                ('/roleCommandAdd', 'role_command_add', 'Добавить команду для роли', NEW.id),
+                ('/roleCommandDelete', 'role_command_delete', 'Удалить команду для роли', NEW.id),
+                ('/userRoleSet', 'role_user_set', 'Устаноить пользователю роль', NEW.id),
+                ('/commandRename', 'command_rename', 'Изменить название команды', NEW.id),
+                ('/chatUser', 'chat_user', 'Получить информацию о юзере', NEW.id),
+                ('/chatStatsUserJoin', 'chat_stats_user_join', 'Получить статистику о подключившихся пользователях', NEW.id),
+                ('/chatStatsUserActive', 'chat_stats_user_active', 'Получить статистику активных пользователей', NEW.id);
 
             -- Добавляем разрешения для ролей
             -- Администратор получает доступ ко всем командам

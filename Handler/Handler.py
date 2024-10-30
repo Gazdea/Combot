@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import re
+from time import sleep
 from aiogram import types
 from Service import Service
 
@@ -147,6 +148,30 @@ class Handlers:
                     return
         await message.answer('Необходимо указать пользователя, которого нужно разбанить.')
 
+    async def chat_spam_mute_time_set(self, message: types.Message):
+        chat = self.service.get_chat_by_id(message.chat.id)
+        chat.spam_mute_time = message.text.split()[1]
+        self.service.save_chat(chat)
+
+    async def chat_spam_mum_message_set(self, message: types.Message):
+        chat = self.service.get_chat_by_id(message.chat.id)
+        chat.spam_message = message.text.split()[1]
+        self.service.save_chat(chat)
+    
+    async def chat_spam_time_set(self, message: types.Message):
+        chat = self.service.get_chat_by_id(message.chat.id)
+        chat.spam_time = message.text.split()[1]
+        self.service.save_chat(chat)
+        
+    async def chat_delete_pattern_set(self, message: types.Message):
+        chat = self.service.get_chat_by_id(message.chat.id)
+        chat.delete_pattern = message.text.split()[1]
+        self.service.save_chat(chat)
+        
+    async def role_add(self, message: types.Message):
+        self.service
+    
+    @staticmethod
     async def anti_spam_protection(self, message: types.Message):
         """Защита от спама: если пользователь отправляет больше max_messages за time_window секунд, он заглушается."""
         mute_user = self.service.get_mute_user(message.from_user.id, message.chat.id)
@@ -154,12 +179,14 @@ class Handlers:
             await message.answer(f"Пользователь замучен до {mute_user.mute_end}")
             await self.mute_user(message, mute_user.chat_id, mute_user.user_id, mute_user.mute_end)
 
+    @staticmethod
     async def remove_links(self, message: types.Message):
         """Удаляет сообщения, содержащие ссылки."""
         chat_dto = self.service.get_chat_by_id(message.chat.id)
         if re.search(chat_dto.delete_pattern, message.text):
             await message.bot.delete_message(message.chat.id, message.message_id)
 
+    @staticmethod
     async def welcome_new_member(self, message: types.Message):
         """Приветствие новых пользователей в чате. Если бот добавлен в чат, добавляет информацию о чате и администраторах."""
         bot_added = False
@@ -178,17 +205,25 @@ class Handlers:
                 self.service.add_user(admin.user.id, admin.user.username)
                 self.service.add_user_by_chat(admin.user.id, message.chat.id, 'admin')
             await message.answer('Спасибо, что пригласили меня. Теперь я готов работать!')
-            
+    
+    @staticmethod
     async def save_message(self, message: types.Message):
         """Сохранение сообщения"""
         self.service.save_message(message.message_id ,message.chat.id, message.from_user.id, message.text, message.content_type, message.date.isoformat())
-        
-        
-    async def mute_user(self, message: types.Message, chat_id, user_id, time: datetime | timedelta):
+    
+    @staticmethod
+    async def mute_user(self, message: types.Message, chat_id, user_id, mute_end: datetime | timedelta):
         """Выдача мута"""
         await message.bot.restrict_chat_member(
-                            chat_id=chat_id,
-                            user_id=user_id,
-                            permissions=types.ChatPermissions(can_send_messages=False, can_send_media_messages=False),
-                            until_date=time
-                        )
+            chat_id=chat_id,
+            user_id=user_id,
+            permissions=types.ChatPermissions(can_send_messages=False, can_send_media_messages=False),
+            until_date=mute_end
+        )
+        await sleep(mute_end)
+        await message.bot.restrict_chat_member(
+            chat_id=chat_id,
+            user_id=user_id,
+            permissions=types.ChatPermissions(can_send_messages=True, can_send_media_messages=True)
+        )
+        
