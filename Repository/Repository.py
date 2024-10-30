@@ -1,49 +1,21 @@
 from datetime import date, datetime
-import logging
-from typing import List, Optional, Generator
-from contextlib import contextmanager
-
-from Entity.Entity import Chat, Role, Command, RolePermission, User, Message, UserChat, MutedUsers
-from Connection.SQLAlchemy import DBConnection
-from sqlalchemy.orm import Session
-from Mapper.Mapper import Mapper
-
-
-class RepositoryBase:
-    @contextmanager
-    def session_scope(self)-> Generator[Session, None, None]:
-        """Контекстный менеджер для работы с сессией."""
-        session = DBConnection.get_session()  # Создаем новую сессию для каждой транзакции
-        try:
-            yield session
-            session.commit()  # Коммит транзакции
-        except Exception as e:
-            logging.error(f'Error occurred: {e}', exc_info=True)
-            session.rollback()  # Откат транзакции при ошибке
-            raise e
-        finally:
-            session.close()  # Закрытие сессии после завершения
-
+from typing import List, Optional
+from Models.Entity import Chat, Role, Command, RolePermission, User, Message, UserChat, MutedUsers
+from Models.DTO import DTOChat, DTOCommand, DTOMessage, DTOMutedUsers, DTORole, DTORolePermission, DTOUser, DTOUserChat
+from Repository import RepositoryBase
 
 class ChatRepository(RepositoryBase):
     def create_chat(self, chat_dto) -> Optional[Chat]:
-        chat = Mapper.chat_to_entity(chat_dto)
+        chat = Chat.model_validate(chat_dto)
         with self.session_scope() as session:
             session.merge(chat)
             session.flush()
-            return Mapper.chat_to_dto(chat)  # Возвращаем DTO
-
-    def add_user_by_chat(self, user_chat_dto) -> Optional[UserChat]:
-        user_chat = Mapper.user_chat_to_entity(user_chat_dto)
-        with self.session_scope() as session:
-            session.merge(user_chat)
-            session.flush()
-            return Mapper.user_chat_to_dto(user_chat)  # Возвращаем DTO
+            return DTOChat.model_validate(chat)  # Возвращаем DTO
 
     def get_chat(self, chat_id: int) -> Optional[Chat]:
         with self.session_scope() as session:
             chat = session.query(Chat).filter(Chat.id == chat_id).first()
-            return Mapper.chat_to_dto(chat) if chat else None  # Возвращаем DTO
+            return DTOChat.model_validate(chat) if chat else None  # Возвращаем DTO
 
     def update_chat(self, chat_dto) -> Optional[Chat]:
         chat = Mapper.chat_to_entity(chat_dto)
@@ -51,7 +23,7 @@ class ChatRepository(RepositoryBase):
             existing_chat = session.query(Chat).filter(Chat.id == chat.id).first()
             if existing_chat:
                 existing_chat.chat_name = chat.chat_name
-            return Mapper.chat_to_dto(existing_chat) if existing_chat else None  # Возвращаем DTO
+            return DTOChat.model_validate(existing_chat) if existing_chat else None  # Возвращаем DTO
 
     def delete_chat(self, chat_id: int) -> Optional[bool]:
         with self.session_scope() as session:
@@ -64,7 +36,7 @@ class ChatRepository(RepositoryBase):
     def list_chats(self) -> List[Chat]:
         with self.session_scope() as session:
             chats = session.query(Chat).all()
-            return [Mapper.chat_to_dto(chat) for chat in chats]  # Возвращаем список DTO
+            return [DTOChat.model_validate(chat) for chat in chats]  # Возвращаем список DTO
 
 
 class RoleRepository(RepositoryBase):
@@ -274,6 +246,13 @@ class UserChatRepository(RepositoryBase):
     def get_join_users(self, chat_id: int, date_start: date, date_end: date) -> List[Optional[UserChat]]:
         with self.session_scope() as session:
             return [Mapper.user_chat_to_dto(user_chat for user_chat in session.query(UserChat).filter(UserChat.chat_id == chat_id, UserChat.join_date >= date_start, UserChat.join_date <= date_end).all)]
+
+    def add_user_by_chat(self, user_chat_dto) -> Optional[UserChat]:
+        user_chat = Mapper.user_chat_to_entity(user_chat_dto)
+        with self.session_scope() as session:
+            session.merge(user_chat)
+            session.flush()
+            return Mapper.user_chat_to_dto(user_chat)  # Возвращаем DTO
 
 
 class MutedUserRepository(RepositoryBase):

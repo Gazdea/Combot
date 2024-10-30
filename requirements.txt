@@ -4,3 +4,4 @@ aiogram==2.25.0
 asyncpg
 sqlalchemy
 pydantic
+alembic

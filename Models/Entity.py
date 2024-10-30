@@ -1,7 +1,8 @@
 from sqlalchemy import Float, Column, Integer, BigInteger, ForeignKey, Text, TIMESTAMP, func
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-Base = declarative_base()
+from sqlalchemy.orm import relationship, DeclarativeBase
+
+class Base(DeclarativeBase):
+    pass
 
 class Chat(Base):
     __tablename__ = 'chats'
@@ -83,11 +84,24 @@ class Message(Base):
     user = relationship('User')
     chat = relationship('Chat', back_populates='messages')
 
-class MutedUsers(Base):
+class MutedUser(Base):
     __tablename__ = 'muted_users'
     
-    user_id = Column(Integer, primary_key=True)
-    chat_id = Column(Integer, primary_key=True)
-    mute_end = Column(TIMESTAMP)
-
+    user_id = Column(BigInteger, ForeignKey('users.id'), primary_key=True)
+    chat_id = Column(BigInteger, ForeignKey('chats.id'), primary_key=True)
+    time_end = Column(TIMESTAMP)
+    reason = Column(Text)
     
+    user = relationship('User', back_populates='muted_user')
+    chat = relationship('Chat', back_populates='muted_user')
+
+class BanUser(Base):
+    __tablename__ = 'ban_users'
+    
+    user_id = Column(BigInteger, ForeignKey('users.id'), primary_key=True)
+    chat_id = Column(BigInteger, ForeignKey('chats.id'), primary_key=True)
+    time_end = Column(TIMESTAMP)
+    reason = Column(Text)
+    
+    user = relationship('User', back_populates='ban_user')
+    chat = relationship('Chat', back_populates='ban_user')
