@@ -1,5 +1,5 @@
+from typing import Optional
 from pydantic import BaseModel
-from typing import List, Optional
 
 class Role(BaseModel):
     id: int
@@ -28,7 +28,8 @@ class UserChat(BaseModel):
     join_date: str
 
 class Message(BaseModel):
-    id: int
+    id: Optional[int] = None
+    message_id: int
     user_id: int
     chat_id: int
     message: str
@@ -38,3 +39,12 @@ class Message(BaseModel):
 class Chat(BaseModel):
     id: int
     chat_name: str
+    spam_mute_time: float
+    spam_message: int
+    spam_time: int
+    delete_pattern: str
+
+class MutedUsers(BaseModel):
+    user_id: int
+    chat_id: int
+    mute_end: str
