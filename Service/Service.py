@@ -11,7 +11,7 @@ class ChatService:
         return self.chat_repo.get_chat(chat_id)
     
     def new_chat(self, chat_id, chat_name):
-        return self.chat_repo.create_chat(DTO.DTOChat(
+        return self.chat_repo.create_chat(DTO.ChatDTO(
             id=chat_id,
             chat_name=chat_name,
             spam_mute_time=60,
@@ -31,7 +31,7 @@ class UserService:
         return self.user_repo.get_user(user_id)
     
     def add_user(self, user_id, username):
-        user = self.user_repo.create_user(DTO.DTOUser(
+        user = self.user_repo.create_user(DTO.UserDTO(
             id=user_id,
             username=username
         ))
@@ -43,7 +43,7 @@ class RoleService:
         self.role_repo = RoleRepository()
 
     def add_role(self, chat_id, role_name):
-        return self.role_repo.add_role(DTO.DTORole(role_name=role_name, chat_id=chat_id))
+        return self.role_repo.add_role(DTO.RoleDTO(role_name=role_name, chat_id=chat_id))
     
     def delete_role(self, chat_id, role_name):
         role = self.role_repo.get_role_by_name(chat_id, role_name)
@@ -53,7 +53,7 @@ class RoleService:
         
         command = CommandRepository().get_command_by_name(command_name)
         role = self.role_repo.get_role_by_name(chat_id, role_name)
-        return self.role_repo.delete_command_by_role(DTO.DTORolePermission(role_id=role.id, command_id=command.id))
+        return self.role_repo.delete_command_by_role(DTO.RolePermissionDTO(role_id=role.id, command_id=command.id))
     
     def get_role_by_chat_user(self, chat_id, user_id):
         return self.role_repo.get_role_by_user(chat_id, user_id)
@@ -84,7 +84,7 @@ class MessageService:
         return self.mesg_repo.get_messages(chat_id, user_id)
     
     def save_message(self, message_id, chat_id, user_id, message, message_type, date):
-        return self.mesg_repo.create_message(DTO.DTOMessage(
+        return self.mesg_repo.create_message(DTO.MessageDTO(
             message_id=message_id,
             user_id=user_id,
             chat_id=chat_id,
@@ -117,7 +117,7 @@ class UserChatService:
         return self.user_chat_repo.set_user_role(user_chat_dto)
     
     def add_user_by_chat(self, user_id, chat_id, role):
-        user_chat = self.user_chat_repo.add_user_by_chat(DTO.DTOUserChat(
+        user_chat = self.user_chat_repo.add_user_by_chat(DTO.UserChatDTO(
             user_id=user_id,
             chat_id=chat_id,
             role_id=RoleRepository().get_role_by_name(chat_id, role).id,
@@ -133,4 +133,4 @@ class RolePermissionService:
     def role_command_add(self, chat_id, role_name, command_name):
         command = CommandRepository().get_command_by_name(command_name)
         role = RoleRepository().get_role_by_name(chat_id, role_name)
-        return self.role_perm_repo.set_command_by_role(DTO.DTORolePermission(role_id=role.id, command_id=command.id))
+        return self.role_perm_repo.set_command_by_role(DTO.RolePermissionDTO(role_id=role.id, command_id=command.id))
