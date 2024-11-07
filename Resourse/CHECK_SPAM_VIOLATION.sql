@@ -1,4 +1,3 @@
-CREATE OR REPLACE FUNCTION check_spam_violation()
 RETURNS TRIGGER AS $$
 DECLARE
     mute_duration FLOAT;
@@ -31,7 +30,3 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER spam_violation_check
-AFTER INSERT ON messages
-FOR EACH ROW
-EXECUTE FUNCTION check_spam_violation();

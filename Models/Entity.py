@@ -18,6 +18,8 @@ class Chat(Base):
     commands = relationship('Command', back_populates='chat')
     user_chats = relationship('UserChat', back_populates='chat')
     messages = relationship('Message', back_populates='chat')
+    muted_users = relationship('MutedUser', back_populates='chat')
+    ban_user = relationship('BanUser', back_populates='chat')
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -57,6 +59,8 @@ class User(Base):
     username = Column(Text)
 
     user_chats = relationship('UserChat', back_populates='user')
+    muted_users = relationship('MutedUser', back_populates='user')
+    ban_user = relationship('BanUser', back_populates='user')
 
 class UserChat(Base):
     __tablename__ = 'user_chats'
@@ -92,8 +96,8 @@ class MutedUser(Base):
     time_end = Column(TIMESTAMP)
     reason = Column(Text)
     
-    user = relationship('User', back_populates='muted_user')
-    chat = relationship('Chat', back_populates='muted_user')
+    user = relationship('User', back_populates='muted_users')
+    chat = relationship('Chat', back_populates='muted_users')
 
 class BanUser(Base):
     __tablename__ = 'ban_users'

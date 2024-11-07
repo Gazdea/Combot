@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Alembic Migration",
+            "type": "shell",
+            "command": "alembic revision --autogenerate -m \"migration\" && alembic upgrade head",
+            "problemMatcher": []
+        }
+    ]
+}

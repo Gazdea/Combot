@@ -1,14 +1,10 @@
 import os
 import logging
 import asyncio
-from dotenv import load_dotenv
-from aiogram import Bot, Dispatcher, types
+from telethon import Bot, Dispatcher, types
 
 # Импорт модулей приложения
-from Handler.Handler import Handlers
-
-# Загрузка переменных окружения
-load_dotenv()
+from handlers import CommandHandlers, ChatHandlers
 
 # Получение токена и ID админа
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -28,18 +24,19 @@ dp = Dispatcher(bot=bot)
 
 @dp.message_handler(lambda message: message.text.startswith('/'))
 async def handle_command(message: types.Message):
-    await Handlers().execute_command(message)
+    await CommandHandlers().execute_command(message)
 
 @dp.message_handler(content_types=['new_chat_members'])
 async def new_member(message: types.Message):
-    await Handlers().welcome_new_member(message)
+    await ChatHandlers().welcome_new_member(message)
 
 @dp.message_handler()
 async def handle_message(message: types.Message):
-    """"""
-    await Handlers().save_message(message)
-    await Handlers().remove_links(message)
-    await Handlers().anti_spam_protection(message)
+    member = await message.chat.get_member(message.from_user.id)
+    if not member.is_chat_admin():
+        await ChatHandlers().save_message(message)
+        await ChatHandlers().remove_links(message)
+        await ChatHandlers().anti_spam_protection(message)
 # ===============================
 # Запуск бота
 # ===============================
