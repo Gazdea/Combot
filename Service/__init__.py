@@ -1,9 +1,9 @@
 
-from .Chat import ChatService
-from .Command import CommandService
-from .Message import MessageService
-from .MutedUser import MutedUserService
-from .RolePermission import RolePermisionService
-from .Role import RoleService
-from .User import UserService
-from .UserChat import UserChatService
+from .ChatService import ChatService
+from .CommandService import CommandService
+from .MessageService import MessageService
+from .MutedUserService import MutedUserService
+from .RolePermissionService import RolePermisionService
+from .RoleService import RoleService
+from .UserService import UserService
+from .UserChatService import UserChatService

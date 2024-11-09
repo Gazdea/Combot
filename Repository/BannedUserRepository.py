@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
-from Models.Entity import BanUser
-from .Base import BaseRepository
+from models.Entity import BanUser
+from .BaseRepository import BaseRepository
 from config import session_scope
 
 class BannedUserRepository(BaseRepository):

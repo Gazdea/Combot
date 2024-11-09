@@ -1,7 +1,7 @@
-from Repository.Base import BaseRepository
+from .BaseRepository import BaseRepository
 from config import session_scope
 from typing import Optional
-from Models.Entity import Role, UserChat
+from models.Entity import Role, UserChat
 
 class RoleRepository(BaseRepository):
     def __init__(self):

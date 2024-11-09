@@ -1,5 +1,8 @@
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class RoleDTO(BaseModel):
     id: int
@@ -33,6 +36,11 @@ class UserDTO(BaseModel):
     class Config:
         from_attributes = True
 
+    @model_validator(mode="before")
+    def log_mapping(cls, values):
+        logger.info(f"Mapping values to UserDTO: {values}")
+        return values
+    
 class UserChatDTO(BaseModel):
     user_id: int
     chat_id: int
@@ -48,7 +56,6 @@ class MessageDTO(BaseModel):
     user_id: int
     chat_id: int
     message: str
-    message_type: str
     date: str
     
     class Config:

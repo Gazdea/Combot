@@ -7,13 +7,15 @@ class BaseRepository:
     def __init__(self, model: Type[T]):
         self.model = model
 
-    def create(self, instance: T) -> Optional[T]:
+    def save(self, instance: T) -> Optional[T]:
         with session_scope() as session:
-            session.add(instance)
+            if not instance.id:
+                session.add(instance)
+            else:
+                session.merge(instance)
             session.commit()
-            session.refresh(instance)
             return instance
-
+        
     def get(self, entity_id: int) -> Optional[T]:
         with session_scope() as session:
             return session.query(self.model).filter(self.model.id == entity_id).first()
@@ -26,7 +28,6 @@ class BaseRepository:
         with session_scope() as session:
             session.merge(instance)
             session.commit()
-            session.refresh(instance)
             return instance
 
     def delete(self, entity_id: int) -> Optional[bool]:

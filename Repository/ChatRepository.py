@@ -1,7 +1,7 @@
 from typing import Optional
-from Repository.Base import BaseRepository
+from .BaseRepository import BaseRepository
 from config import session_scope
-from Models.Entity import Chat
+from models.Entity import Chat
 
 class ChatRepository(BaseRepository):
     def __init__(self):

@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
-from Models.Entity import Message
-from Repository.Base import BaseRepository
+from models.Entity import Message
+from .BaseRepository import BaseRepository
 from config import session_scope
 
 class MessageRepository(BaseRepository):

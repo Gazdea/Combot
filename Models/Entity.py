@@ -82,7 +82,6 @@ class Message(Base):
     user_id = Column(BigInteger, ForeignKey('users.id'))
     chat_id = Column(BigInteger, ForeignKey('chats.id'))
     message = Column(Text)
-    message_type = Column(Text, default='text')
     date = Column(TIMESTAMP)
 
     user = relationship('User')

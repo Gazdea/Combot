@@ -1,5 +1,5 @@
-from Models.DTO import MutedUsersDTO
-from Repository import MutedUserRepository
+from models.DTO import MutedUsersDTO
+from repository import MutedUserRepository
 
 class MutedUserService:
     def __init__(self):

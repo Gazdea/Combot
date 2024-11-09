@@ -1,8 +1,8 @@
 from datetime import date
 from typing import List
-from Models.Entity import Message
-from Repository import MessageRepository
-from Models.DTO import MessageDTO
+from models.Entity import Message
+from repository import MessageRepository
+from models.DTO import MessageDTO
 
 class MessageService:
     def __init__(self):
@@ -16,4 +16,5 @@ class MessageService:
         return [MessageDTO.model_validate(message) for message in messages]
 
     def save_message(self, message: MessageDTO) -> MessageDTO:
-        return MessageDTO.model_validate(self.repo.create(Message(**message.model_dump())))
+        create_message = self.repo.save(Message(**message.model_dump()))
+        return MessageDTO.model_validate(create_message)

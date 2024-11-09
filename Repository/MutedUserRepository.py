@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
-from Models.Entity import MutedUser
-from Repository.Base import BaseRepository
+from models.Entity import MutedUser
+from .BaseRepository import BaseRepository
 from config import session_scope
 
 class MutedUserRepository(BaseRepository):

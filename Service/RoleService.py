@@ -1,6 +1,6 @@
-from Models.DTO import RoleDTO
-from Models.Entity import Role
-from Repository import RoleRepository
+from models.DTO import RoleDTO
+from models.Entity import Role
+from repository import RoleRepository
 from typing import Optional
 
 class RoleService:
@@ -8,7 +8,7 @@ class RoleService:
         self.repo = RoleRepository()
 
     def add_role(self, role: RoleDTO) -> Optional[RoleDTO]:
-        return RoleDTO.model_validate(self.repo.create(Role(**role.model_dump)))
+        return RoleDTO.model_validate(self.repo.save(Role(**role.model_dump())))
 
     def delete_role(self, chat_id: int, role_name: str) -> bool:
         role = self.repo.get_role_by_role_name(chat_id, role_name)

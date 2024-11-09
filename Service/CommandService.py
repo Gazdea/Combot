@@ -1,6 +1,6 @@
 from typing import List, Optional
-from Repository import CommandRepository
-from Models.DTO import CommandDTO
+from repository import CommandRepository
+from models.DTO import CommandDTO
 
 class CommandService:
     def __init__(self):

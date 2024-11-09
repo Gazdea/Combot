@@ -1,6 +1,6 @@
 from typing import Optional
-from Models.Entity import Command, Role, RolePermission, UserChat
-from Repository.Base import BaseRepository
+from models.Entity import Command, Role, RolePermission, UserChat
+from .BaseRepository import BaseRepository
 from config import session_scope
 
 class CommandRepository(BaseRepository):

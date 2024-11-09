@@ -4,7 +4,7 @@
         {
             "label": "Run Alembic Migration",
             "type": "shell",
-            "command": "alembic revision --autogenerate -m \"migration\" && alembic upgrade head",
+            "command": "alembic upgrade head",
             "problemMatcher": []
         }
     ]

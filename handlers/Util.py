@@ -1,34 +1,37 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import re
-from time import sleep
 from typing import List
-from  import types
-from Service import Chat, Command, Message, MutedUser, Role, RolePermission, User, UserChat
+from telegram import Update, ChatPermissions, MessageEntity
+from telegram.ext import ContextTypes
+from dateutil import parser
+from models.DTO import UserDTO
+from service.UserService import UserService
+                    
+async def get_mentioned_users(update: Update, context: ContextTypes.DEFAULT_TYPE) -> List[UserDTO]:
+    """Получает ID всех упомянутых пользователей по @username в чате, кроме бота."""
+    bot_username = (await context.bot.get_me()).username
+    mentioned_user = []
+    
+    if update.message and update.message.text:
+        mentioned_usernames = re.findall(r'@(\w+)', update.message.text)
+        for username in mentioned_usernames:
+            if username.lower() != bot_username.lower():
+                user = UserService().get_user_by_username(username)
+                mentioned_user.append(user)
+    return mentioned_user
 
-
-async def get_mentions(message: types.Message) -> List[types.User]:
-    """Получает всех упомянутых пользователей в чате, кроме бота."""
-    bot_username = (await message.bot.get_me()).username
-    users = []
-    # print(message.entities)
-    for entity in message.entities or []:
-        print(entity)
-        if entity.type == "mention" and bot_username != entity.user.username:
-            users.append(entity.user)
-    return users
-
-async def extract_datetime_from_message(message: types.Message):
-    """Извлекает дату и/или время, указанные в сообщении, или возвращает время через 1 минуту, если ничего не указано."""
+async def extract_datetime_from_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Извлекает дату и/или время, указанные в сообщении."""
     current_date = datetime.now()
 
     datetime_patterns = [
         r"(\d{2})[./-](\d{2})[./-](\d{4})[ ]?(\d{2}:\d{2})?",  # дд.мм.гггг чч:мм или дд/мм/гггг чч:мм
         r"(\d{4})[./-](\d{2})[./-](\d{2})[ ]?(\d{2}:\d{2})?",  # гггг-мм-дд чч:мм
-        r"(\d{2}:\d{2})"  # только время чч:мм
+        r"(\d{2}[./:]\d{2})"  # только время чч:мм
     ]
     
     for pattern in datetime_patterns:
-        match = re.search(pattern, message.text)
+        match = re.search(pattern, update.message.text)
         if match:
             date_str = match.group(0)
             try:
@@ -54,21 +57,13 @@ async def extract_datetime_from_message(message: types.Message):
                 return date
             except ValueError:
                 continue
-    # Если ни дата, ни время не указаны, возвращаем текущее время + 1 минута
-    return current_date + timedelta(minutes=1)
+    return None
 
-async def mute_user(message: types.Message, chat_id, user_id, mute_end: datetime | timedelta):
+async def muted_user(update: Update, context: ContextTypes.DEFAULT_TYPE, chat_id, user_id, mute_end: datetime):
     """Выдача мута"""
-    await message.bot.restrict_chat_member(
+    await context.bot.restrict_chat_member(
         chat_id=chat_id,
         user_id=user_id,
-        permissions=types.ChatPermissions(can_send_messages=False, can_send_media_messages=False),
+        permissions=ChatPermissions(can_send_messages=False, can_send_media_messages=False),
         until_date=mute_end
     )
-    await sleep(mute_end)
-    await message.bot.restrict_chat_member(
-        chat_id=chat_id,
-        user_id=user_id,
-        permissions=types.ChatPermissions(can_send_messages=True, can_send_media_messages=True)
-    )
-    
