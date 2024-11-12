@@ -6,3 +6,4 @@ pydantic
 alembic
 alembic_utils
 python-dateutil
+pytest

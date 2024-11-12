@@ -1,6 +1,6 @@
 from telegram import Update, ChatMemberAdministrator, ChatMemberOwner
 from telegram.ext import ContextTypes
-from .Util import get_mentioned_users, extract_datetime_from_message, muted_user
+from .Util import get_mentioned_users, extract_datetime_from_message
 from service import ChatService, RoleService, UserService, CommandService, MessageService, UserChatService, MutedUserService, RolePermisionService
 
 async def debug(update: Update, context: ContextTypes.DEFAULT_TYPE):

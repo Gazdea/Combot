@@ -1,10 +1,9 @@
-from datetime import datetime, timedelta
 import re
-from telegram import Update
+from telegram import ChatPermissions, Update
 from telegram.ext import ContextTypes
 from models.DTO import MessageDTO, UserDTO
 from service import ChatService, RoleService, UserService, CommandService, MessageService, UserChatService, MutedUserService, RolePermisionService
-from .Util import muted_user
+
 class ChatHandlers:
     @staticmethod
     async def anti_spam_protection(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -12,7 +11,12 @@ class ChatHandlers:
         message = update.message
         mute_user = MutedUserService().get_mute_user(message.chat.id, message.from_user.id)
         if mute_user:
-            await muted_user(update, context, mute_user)
+            await context.bot.restrict_chat_member(
+                chat_id=mute_user.chat_id,
+                user_id=mute_user.user_id,
+                permissions=ChatPermissions.no_permissions(),
+                until_date=mute_user.time_end
+            )
 
     @staticmethod
     async def remove_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -34,27 +38,35 @@ class ChatHandlers:
                 bot_added = True
             else:
                 UserService().add_user(UserDTO(id=member.id, username=member.username))
-                UserChatService().add_user_by_chat(member.id, message.chat.id, 'user')
-                await update.message.reply_text(f'Добро пожаловать в наш чат, {member.username if member.username else member.first_name}!')
+                UserChatService().add_user_by_chat(member.id, message.chat.id, 'user', message.date)
+                await context.bot.send_message(message.chat.id, f'Добро пожаловать в наш чат, {member.username if member.username else member.first_name}!')
 
         if bot_added:
             ChatService().new_chat(message.chat.id, message.chat.title)
             admins = await context.bot.get_chat_administrators(message.chat.id)
             for admin in admins:
-                UserService().add_user(UserDTO(admin.user.id, admin.user.username))
-                UserChatService().add_user_by_chat(admin.user.id, message.chat.id, 'admin')
-            await message.reply_text('Спасибо, что пригласили меня. Теперь я готов работать!')
-
+                UserService().add_user(UserDTO(id=admin.user.id, username=admin.user.username))
+                UserChatService().add_user_by_chat(admin.user.id, message.chat.id, 'admin', message.date)
+            await context.bot.send_message(message.chat.id, 'Спасибо, что пригласили меня. Теперь я готов работать!')
+            await context.bot.send_message(message.chat.id, 'Для корректной работы с чатом не забудьте установить права администратора.')
+ 
     @staticmethod
     async def save_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Сохранение сообщения"""
         message = update.message
+        user = UserService().get_user_by_id(message.from_user.id)
+        if not user:
+            UserService().add_user(UserDTO(id=message.from_user.id, username=message.from_user.username))
+        user_chat = UserChatService().get_user_chat(message.chat.id, message.from_user.id)
+        if not user_chat:
+            UserChatService().add_user_by_chat(message.from_user.id, message.chat.id, 'user', message.date)
+            
         MessageService().save_message(
             MessageDTO(
                 message_id=message.message_id,
                 chat_id=message.chat.id,
                 user_id=message.from_user.id,
                 message=message.text,
-                date=message.date.isoformat()
+                date=message.date
             )
         )

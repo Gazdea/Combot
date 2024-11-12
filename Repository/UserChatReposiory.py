@@ -3,6 +3,7 @@ from typing import Optional
 from models.Entity import UserChat
 from .BaseRepository import BaseRepository
 from config import session_scope
+from sqlalchemy.orm import make_transient
 
 class UserChatRepository(BaseRepository):
     def __init__(self):
@@ -10,40 +11,27 @@ class UserChatRepository(BaseRepository):
 
     def save(self, user_chat: UserChat) -> Optional[UserChat]:
         with session_scope() as session:
-            session.merge(user_chat)
-            session.commit()
+            user_chat = session.merge(user_chat)
+            session.refresh(user_chat)
+            session.expunge(user_chat)
+            make_transient(user_chat)
             return user_chat
-        
-    # def get(self, chat_id: int) -> Optional[UserChat]:
-    #     with session_scope() as session:
-    #         return session.query(UserChat).filter(UserChat.chat_id == chat_id).first()
-
-    # def list(self) -> Optional[List[T]]:
-    #     with session_scope() as session:
-    #         return session.query(self.model).all()
-
-    # def update(self, instance: T) -> Optional[T]:
-    #     with session_scope() as session:
-    #         session.merge(instance)
-    #         session.commit()
-    #         return instance
-
-    # def delete(self, entity_id: int) -> Optional[bool]:
-    #     with session_scope() as session:
-    #         instance = session.query(self.model).filter(self.model.id == entity_id).first()
-    #         if instance:
-    #             session.delete(instance)
-    #             session.commit()
-    #             return True
-    #         return False
         
     def get_user_role(self, chat_id: int, user_id: int) -> Optional[UserChat]:
         with session_scope() as session:
-            return session.query(UserChat).filter(
+            instance = session.query(UserChat).filter(
                 UserChat.chat_id == chat_id, 
                 UserChat.user_id == user_id
                 ).first()
+            session.expunge(instance)
+            make_transient(instance)
+            return instance
+        
 
-    def get_join_users(self, chat_id: int, date_start: date, date_end: date) -> list[Optional[UserChat]]:
+    def get_join_users(self, chat_id: int, date_start: date, date_end: date) -> list[UserChat]:
         with session_scope() as session:
-            return session.query(UserChat).filter(UserChat.chat_id == chat_id, UserChat.join_date >= date_start, UserChat.join_date <= date_end).all()
+            users = session.query(UserChat).filter(UserChat.chat_id == chat_id, UserChat.join_date >= date_start, UserChat.join_date <= date_end).all()
+            for user in users:
+                session.expunge(user)
+                make_transient(user)
+            return users

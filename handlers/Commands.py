@@ -1,8 +1,10 @@
 from datetime import datetime
 import random
-from telegram import Update
+from telegram import ChatPermissions, Update
 from telegram.ext import ContextTypes
-from .Util import get_mentioned_users, extract_datetime_from_message, muted_user
+
+from models.DTO import MutedUsersDTO
+from .Util import get_mentioned_users, extract_datetime_from_message, get_reason_from_message
 from service import ChatService, RoleService, UserService, CommandService, MessageService, UserChatService, MutedUserService, RolePermisionService
 from resourse.bot_response import start_responses, bot_info
 
@@ -18,7 +20,10 @@ class CommandHandlers:
         if command_match:
             command_method = getattr(self, command_match.command_name, None)
             if command_method:
-                await command_method(update, context)
+                try:
+                    await command_method(update, context)
+                except Exception as e:
+                    await message.reply_text(f"Ошибка выполнения команды: {str(e)}")
         else:
             await message.reply_text(f"Команда {command_input} вам не доступна.")
 
@@ -43,29 +48,42 @@ class CommandHandlers:
         """Заглушить пользователя."""
         message = update.message
         users = await get_mentioned_users(update, context)
+        if not users:
+            await message.reply_text('Необходимо указать пользователей, которых нужно заглушить. Пример @Username')
+            return
         mute_until = await extract_datetime_from_message(update, context)
-        if users:
-            for user in users:
-                await muted_user(update, context, message.chat.id, user.id, mute_until)
-                await message.reply_text(f'Пользователь {user.username} заглушен до {mute_until}')
+        if not mute_until:
+            await message.reply_text('Необходимо указать время заглушки. Пример 2022-01-01 или 10:00 или 1h, 1m, 1d или все вместе')
+            return
+        reason = get_reason_from_message(update, context)
+        if not reason:
+            await message.reply_text('Необходимо указать причину заглушки. Пример \"Нам такой не нужен\"')
+            return
+        for user in users:
+            MutedUserService().add_mute_user(MutedUsersDTO(user_id=user.id, chat_id=message.chat.id, until_date=mute_until, reason=reason))
+            await context.bot.restrict_chat_member(
+                chat_id=message.chat.id,
+                user_id=user.id,
+                permissions=ChatPermissions.no_permissions(),
+                until_date=mute_until
+            )
+            await message.reply_text(f'Пользователь {user.username} заглушен до {mute_until}')
 
     async def unmute(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Снять мут с пользователя."""
         message = update.message
-        if message.entities:
-            for entity in message.entities:
-                if entity.type == 'mention' and entity.user:
-                    try:
-                        await context.bot.restrict_chat_member(
-                            chat_id=message.chat.id,
-                            user_id=entity.user.id,
-                            until_date=datetime.now()
-                        )
-                        await message.reply_text(f'Мут с пользователя {entity.user.username} снят.')
-                    except Exception as e:
-                        await message.reply_text(f'Не удалось снять мут с пользователя: {e}')
-                    return
-        await message.reply_text('Необходимо указать пользователя, с которого нужно снять мут.')
+        users = await get_mentioned_users(update, context)
+        if not users:
+            await message.reply_text('Необходимо указать пользователей, с которых нужно снять мут. Пример @Username')
+            return
+        for user in users:
+            MutedUserService().update_mute_user(MutedUsersDTO(user_id=user.id, chat_id=message.chat.id, until_date=datetime.now()))
+            await context.bot.restrict_chat_member(
+                chat_id=message.chat.id,
+                user_id=user.id,
+                permissions=ChatPermissions.all_permissions(),
+                until_date=datetime.now()
+            )
 
     async def kick(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Выгнать пользователя из чата."""

@@ -21,8 +21,8 @@ BEGIN
         AND date > (last_message_time - INTERVAL '1 second' * time_window)
        ) >= max_messages THEN
         
-        INSERT INTO muted_users (user_id, chat_id, time_end)
-        VALUES (NEW.user_id, NEW.chat_id, last_message_time + INTERVAL '1 second' * mute_duration)
+        INSERT INTO muted_users (user_id, chat_id, time_end, reason)
+        VALUES (NEW.user_id, NEW.chat_id, last_message_time + INTERVAL '1 second' * mute_duration, 'Spam')
         ON CONFLICT (user_id, chat_id) DO UPDATE
         SET time_end = last_message_time + INTERVAL '1 second' * mute_duration;
     END IF;

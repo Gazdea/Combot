@@ -16,6 +16,7 @@ def session_scope()-> Generator[Session, None, None]:
     session = SessionLocal()
     try:
         yield session
+        session.commit()
     except Exception as e:
         logging.error(f'Error occurred: {e}', exc_info=True)
         session.rollback()

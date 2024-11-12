@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 from models.DTO import UserChatDTO
 from models.Entity import UserChat
@@ -24,14 +24,12 @@ class UserChatService:
             return UserChatDTO.model_validate(self.user_chat_repo.update(user_chat))
         return None
 
-    def add_user_by_chat(self, user_id: int, chat_id: int, role_name: str) -> Optional[UserChatDTO]:
+    def add_user_by_chat(self, user_id: int, chat_id: int, role_name: str, join_date: datetime) -> Optional[UserChatDTO]:
         role = self.role_repo.get_role_by_role_name(chat_id, role_name)
-        if role:
-            user_chat_dto = UserChatDTO(
-                user_id=user_id,
-                chat_id=chat_id,
-                role_id=role.id,
-                join_date=date.today().isoformat()
-            )
-            return UserChatDTO.model_validate(self.user_chat_repo.save(UserChat(**user_chat_dto.model_dump())))
-        return False
+        user_chat_dto = UserChatDTO(
+            user_id=user_id,
+            chat_id=chat_id,
+            role_id=role.id,
+            join_date=join_date
+        )
+        return UserChatDTO.model_validate(self.user_chat_repo.save(UserChat(**user_chat_dto.model_dump())))

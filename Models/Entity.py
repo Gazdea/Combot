@@ -89,9 +89,9 @@ class Message(Base):
 
 class MutedUser(Base):
     __tablename__ = 'muted_users'
-    
-    user_id = Column(BigInteger, ForeignKey('users.id'), primary_key=True)
-    chat_id = Column(BigInteger, ForeignKey('chats.id'), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger, ForeignKey('users.id'))
+    chat_id = Column(BigInteger, ForeignKey('chats.id'))
     time_end = Column(TIMESTAMP)
     reason = Column(Text)
     
@@ -101,8 +101,9 @@ class MutedUser(Base):
 class BanUser(Base):
     __tablename__ = 'ban_users'
     
-    user_id = Column(BigInteger, ForeignKey('users.id'), primary_key=True)
-    chat_id = Column(BigInteger, ForeignKey('chats.id'), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger, ForeignKey('users.id'))
+    chat_id = Column(BigInteger, ForeignKey('chats.id'))
     time_end = Column(TIMESTAMP)
     reason = Column(Text)
     
