@@ -8,14 +8,14 @@ from sqlalchemy.orm import make_transient
 class UserChatRepository(BaseRepository):
     def __init__(self):
         super().__init__(UserChat)
-
-    def save(self, user_chat: UserChat) -> Optional[UserChat]:
+    
+    def delete(self, chat_id: int, user_id: int) -> bool:
         with session_scope() as session:
-            user_chat = session.merge(user_chat)
-            session.refresh(user_chat)
-            session.expunge(user_chat)
-            make_transient(user_chat)
-            return user_chat
+            user_chat = session.query(UserChat).filter(UserChat.chat_id == chat_id, UserChat.user_id == user_id).first()
+            if user_chat:
+                session.delete(user_chat)
+                return True
+            return False
         
     def get_user_role(self, chat_id: int, user_id: int) -> Optional[UserChat]:
         with session_scope() as session:

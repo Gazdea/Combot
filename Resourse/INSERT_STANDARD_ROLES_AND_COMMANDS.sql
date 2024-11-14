@@ -28,7 +28,8 @@ BEGIN
                 ('/commandRename', 'command_rename', 'Изменить название команды', NEW.id),
                 ('/chatUser', 'chat_user', 'Получить информацию о юзере', NEW.id),
                 ('/chatStatsUserJoin', 'chat_stats_user_join', 'Получить статистику о подключившихся пользователях', NEW.id),
-                ('/chatStatsUserActive', 'chat_stats_user_active', 'Получить статистику активных пользователей', NEW.id);
+                ('/chatStatsUserActive', 'chat_stats_user_active', 'Получить статистику активных пользователей', NEW.id),
+                ('/getCommandsRole', 'get_commands_role', 'Получить команды для роли', NEW.id);
 
     -- Разрешения для ролей (admin, moderator, user)
     INSERT INTO role_permissions (role_id, command_id)

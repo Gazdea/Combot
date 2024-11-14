@@ -1,6 +1,6 @@
 from telegram import Update, ChatMemberAdministrator, ChatMemberOwner
 from telegram.ext import ContextTypes
-from .Util import get_mentioned_users, extract_datetime_from_message
+from .Util import get_mentioned_users, extract_datetime_from_message, get_quoted_text
 from service import ChatService, RoleService, UserService, CommandService, MessageService, UserChatService, MutedUserService, RolePermisionService
 
 async def debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -46,7 +46,6 @@ async def debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Получение упомянутых пользователей, кроме бота
     users = await get_mentioned_users(update, context)
-    print([user for user in users])
     if users:
         response.append(f"Упомянутые пользователи (кроме бота): {', '.join([str(f'{user.id} {user.username}' ) for user in users])}")
     else:
@@ -59,6 +58,12 @@ async def debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         response.append("Дата и время не указаны или не распознаны.")
 
+    # Извлечение вложенного текста в ""
+    if qoutes := await get_quoted_text(update, context):
+        response.append(f"Извлеченные данные из \"\" {qoutes}")
+    else:
+        response.append("Извлеченных данных нету")
+        
     # Отправка собранного сообщения
     response.append("Проверка завершена успешно.")
     await message.reply_text("\n".join(response))

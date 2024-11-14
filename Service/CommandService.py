@@ -18,3 +18,7 @@ class CommandService:
     def get_commands_by_chat_user(self, chat_id: int, user_id: int) -> List[CommandDTO]:
         commands = self.repo.get_commands_by_chat_user(chat_id, user_id)
         return [CommandDTO.model_validate(command) for command in commands]
+
+    def get_commands_by_chat_role(self, chat_id: int, role_id: int) -> List[CommandDTO]:
+        commands = self.repo.get_commands_by_chat_role(chat_id, role_id)
+        return [CommandDTO.model_validate(command) for command in commands]

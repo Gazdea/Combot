@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class RoleDTO(BaseModel):
-    id: int
+    id: Optional[int] = None
     role_name: str
     chat_id: int
     
@@ -20,7 +20,7 @@ class RoleDTO(BaseModel):
         return values
     
 class CommandDTO(BaseModel):
-    id: int
+    id: Optional[int] = None
     command: str
     command_name: str
     description: str
@@ -105,7 +105,7 @@ class ChatDTO(BaseModel):
         return values
     
 class MutedUsersDTO(BaseModel):
-    id: int
+    id: Optional[int] = None
     user_id: int
     chat_id: int
     time_end: datetime
@@ -120,7 +120,7 @@ class MutedUsersDTO(BaseModel):
         return values
     
 class BanUserDTO(BaseModel):
-    id: int
+    id: Optional[int] = None
     user_id: int
     chat_id: int
     time_end: datetime

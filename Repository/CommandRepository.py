@@ -41,3 +41,18 @@ class CommandRepository(BaseRepository):
                 session.expunge(command)
                 make_transient(command)
             return commands
+
+    def get_commands_by_chat_role(self, chat_id: int, role_id: int) -> list[Command]:
+        with session_scope() as session:
+            commands = (
+                session.query(Command)
+                .filter(Command.chat_id == chat_id)
+                .join(RolePermission, RolePermission.command_id == Command.id)
+                .join(Role, Role.id == RolePermission.role_id)
+                .filter(Role.id == role_id)
+                .all()
+            )
+            for command in commands:
+                session.expunge(command)
+                make_transient(command)
+            return commands

@@ -1,5 +1,11 @@
+from pydantic import model_validator
 from sqlalchemy import Float, Column, Integer, BigInteger, ForeignKey, Text, TIMESTAMP, func
 from sqlalchemy.orm import relationship, DeclarativeBase
+
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class Base(DeclarativeBase):
     pass
@@ -24,7 +30,7 @@ class Chat(Base):
 class Role(Base):
     __tablename__ = 'roles'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     role_name = Column(Text)
     chat_id = Column(BigInteger, ForeignKey('chats.id'))
 

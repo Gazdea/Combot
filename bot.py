@@ -1,8 +1,9 @@
 from telegram import Update
 from telegram.ext import MessageHandler, filters, ContextTypes, CommandHandler
 import logging
-from handlers import CommandHandlers, ChatHandlers, debug
+from handlers import execute_command, welcome_new_member, save_message, remove_links, anti_spam_protection
 from config import application
+from handlers import debug
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
@@ -13,19 +14,19 @@ logger = logging.getLogger(__name__)
 # ===============================
 
 async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await CommandHandlers().execute_command(update, context)
+    await execute_command(update, context)
 
 async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await ChatHandlers().welcome_new_member(update, context)
+    await welcome_new_member(update, context)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     member = await context.bot.get_chat_member(chat_id=update.message.chat_id, user_id=update.message.from_user.id)
-    await ChatHandlers().save_message(update, context)
+    await save_message(update, context)
     if member.status not in ['administrator', 'creator']:
-        await ChatHandlers().remove_links(update, context)
-        await ChatHandlers().anti_spam_protection(update, context)
+        await remove_links(update, context)
+        await anti_spam_protection(update, context)
 
-
+#TODO DEBUGGER
 async def handle_debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await debug.debug(update, context)
     

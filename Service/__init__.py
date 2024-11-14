@@ -1,4 +1,4 @@
-
+from .BannedUserService import BannedUserService
 from .ChatService import ChatService
 from .CommandService import CommandService
 from .MessageService import MessageService

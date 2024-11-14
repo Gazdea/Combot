@@ -19,10 +19,11 @@ async def get_mentioned_users(update: Update, context: ContextTypes.DEFAULT_TYPE
                 mentioned_user.append(user)
     return mentioned_user
 
-async def get_reason_from_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-    """Получает причину бана из сообщения. Берет ее из \"\" """
-    return update.message.text.split('\"')[1] if '\"' in update.message.text else ""
-    
+async def get_quoted_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> List[str]:
+    """Returns a list of all text enclosed in double quotes"""
+    text = update.message.text
+    return [text.split('"')[i] for i in range(1, len(text.split('"')), 2)]
+
 async def extract_datetime_from_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Извлекает дату и/или время, указанные в сообщении."""
     current_date = datetime.now()
@@ -45,9 +46,8 @@ async def extract_datetime_from_message(update: Update, context: ContextTypes.DE
             current_date += timedelta(weeks=amount)
 
     for pattern in datetime_patterns:
-        match = re.search(pattern, update.message.text)
-        if match:
-            date_str = match.group(0)
+        if match := re.search(pattern, update.message.text):
+            date_str = match[0]
             try:
                 if re.match(r"^\d{2}[./-]\d{2}[./-]\d{4}$", date_str) or re.match(r"^\d{4}[./-]\d{2}[./-]\d{2}$", date_str):
                     date = datetime.strptime(date_str, "%d.%m.%Y" if '.' in date_str else "%Y-%m-%d")

@@ -19,6 +19,7 @@ target_metadata = Base.metadata
 
 register_entities([schemas.INSERT_STANDARD_ROLES_AND_COMMANDS_FN, schemas.CHECK_SPAM_VIOLATION_FN, schemas.CHECK_SPAM_VIOLATION_TG, schemas.INSERT_STANDARD_ROLES_AND_COMMANDS_TG])
 
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode."""
     context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
@@ -36,9 +37,9 @@ def run_migrations_online():
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
-
     
 if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+
