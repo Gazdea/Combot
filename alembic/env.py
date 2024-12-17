@@ -3,14 +3,14 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 from alembic_utils.replaceable_entity import register_entities
-from resourse import schemas
+from app.resource import schemas
 import sys
 import os
-from config import url
+from app.config import url
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from models.Entity import Base 
+from app.db.model.Entity import Base 
 
 config = context.config
 fileConfig(config.config_file_name)
@@ -18,7 +18,6 @@ fileConfig(config.config_file_name)
 target_metadata = Base.metadata
 
 register_entities([schemas.INSERT_STANDARD_ROLES_AND_COMMANDS_FN, schemas.CHECK_SPAM_VIOLATION_FN, schemas.CHECK_SPAM_VIOLATION_TG, schemas.INSERT_STANDARD_ROLES_AND_COMMANDS_TG])
-
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode."""

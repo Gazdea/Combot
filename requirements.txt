@@ -1,9 +1,0 @@
-python-telegram-bot
-asyncpg
-psycopg2
-sqlalchemy
-pydantic
-alembic
-alembic_utils
-python-dateutil
-pytest

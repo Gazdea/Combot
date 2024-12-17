@@ -8,7 +8,7 @@
             "name": "Python Debugger: Current File",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}\\bot.py",
+            "program": "${workspaceFolder}\\main.py",
             "console": "integratedTerminal",
             "preLaunchTask": "Run Alembic Migration"
         }
