@@ -9,12 +9,12 @@ class UserChatRepository(BaseRepository, ABC):
 
     @abstractmethod
     def delete(self, chat_id: int, user_id: int) -> bool:
-        pass
+        raise NotImplementedError()
         
     @abstractmethod
     def get(self, chat_id: int, user_id: int) -> Optional[UserChat]:
-        pass        
+        raise NotImplementedError()        
 
     @abstractmethod
     def get_join_users(self, chat_id: int, date_start: date, date_end: date) -> List[UserChat]:
-        pass
+        raise NotImplementedError()

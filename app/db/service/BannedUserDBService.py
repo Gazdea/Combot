@@ -6,12 +6,12 @@ class BannedUserDBService(ABC):
         
     @abstractmethod
     def add_ban_user(self, ban_user: BanUserDTO) -> Optional[BanUserDTO]:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def update_ban_user(self, ban_user: BanUserDTO) -> Optional[BanUserDTO]:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_ban_user(self, user_id: int, chat_id: int) -> Optional[BanUserDTO]:
-        pass
+        raise NotImplementedError()

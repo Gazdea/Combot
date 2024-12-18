@@ -1,2 +1,2 @@
-from .CommandHandler import CommandHandler
+from .Handler import Handler
 from .Debug import Debug

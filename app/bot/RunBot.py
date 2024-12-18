@@ -3,6 +3,7 @@ from telegram.ext import MessageHandler, filters, ContextTypes, CommandHandler
 import logging
 from app.di import HandlerContainer
 from app.config import application
+from app.bot.middlewares import global_error_handler
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
@@ -46,5 +47,6 @@ def run_bot():
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, new_member))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
+    application.add_error_handler(global_error_handler)    
     # Запуск бота
     application.run_polling()

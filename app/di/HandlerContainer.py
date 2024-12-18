@@ -1,21 +1,22 @@
 from dependency_injector import containers, providers
-from app.di import ServiceContainer, UtilContainer
+from app.di.ServiceDBContainer import ServiceDBContainer
+from app.di.UtilContainer import UtilContainer
 
 from app.bot.handler.impl import (
-    CommandHandlerImpl,
+    HandlerImpl,
     DebugImpl
 )
 
 class HandlerContainer(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(modules=["main"])
     
-    service_container = providers.Container(ServiceContainer)
+    service_container = providers.Container(ServiceDBContainer)
     util_container = providers.Container(UtilContainer)
     
-    debug_handler = providers.Factory(DebugImpl, util_container.bot_util)
+    debug_handler = providers.Factory(DebugImpl, service_container.user_service, util_container.bot_util)
     
     command_handler = providers.Factory(
-        CommandHandlerImpl, 
+        HandlerImpl, 
         service_container.command_service, 
         service_container.muted_user_service,
         service_container.user_service,

@@ -4,10 +4,10 @@ from telegram import ChatPermissions, Update
 from telegram.ext import ContextTypes
 from app.db.model.DTO import BanUserDTO, MutedUsersDTO, RoleDTO
 from app.resource.bot_response import start_responses, bot_info
+from app.di.ServiceDBContainer import ServiceDBContainer
+from app.di.UtilContainer import UtilContainer
 
-from app.di import ServiceContainer, UtilContainer
-
-service_container = ServiceContainer
+service_container = ServiceDBContainer
 util_container = UtilContainer
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):

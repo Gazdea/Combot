@@ -17,7 +17,7 @@ class CommandRepositoryImpl(BaseRepositoryImpl[Command], CommandRepository):
             return command
         return None
 
-    def get_command_by_chat_user_name(self, chat_id: int, user_id: int, command_name: str) -> Optional[Command]:
+    def get_command_by_chat_user_command_name(self, chat_id: int, user_id: int, command_name: str) -> Optional[Command]:
         if command := (
             self.session.query(Command)
             .filter(Command.chat_id == chat_id)

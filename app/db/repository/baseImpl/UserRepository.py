@@ -8,8 +8,8 @@ class UserRepository(BaseRepository, ABC):
 
     @abstractmethod
     def get_user_by_username(self, username: str) -> Optional[User]:
-        pass
+        raise NotImplementedError()
         
     @abstractmethod
     def get_users(self, users_ids: List[int]) -> List[User]:
-        pass
+        raise NotImplementedError()

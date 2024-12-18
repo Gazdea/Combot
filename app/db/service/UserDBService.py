@@ -7,12 +7,12 @@ class UserDBService(ABC):
 
     @abstractmethod
     def get_user_by_id(self, user_id: int) -> Optional[UserDTO]:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod    
     def get_user_by_username(self, username: int) -> Optional[UserDTO]:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod    
     def add_user(self, user: UserDTO) -> Optional[UserDTO]:
-        pass
+        raise NotImplementedError()

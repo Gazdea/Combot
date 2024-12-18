@@ -6,7 +6,7 @@ from app.db.repository.baseImpl import RoleRepository, UserChatRepository
 from app.db.service import UserChatDBService
 
 class UserChatDBServiceImpl(UserChatDBService):
-    def __init__(self, role_repo: RoleRepository, user_chat_repo: UserChatRepository):
+    def __init__(self, user_chat_repo: UserChatRepository, role_repo: RoleRepository):
         self.role_repo = role_repo
         self.user_chat_repo = user_chat_repo
 

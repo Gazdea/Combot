@@ -15,7 +15,7 @@ class BaseRepository(ABC, Generic[T]):
         Returns:
             Optional[T]: The saved instance, or None if the instance could not be saved.
         """
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get(self, entity_id: int) -> Optional[T]:
@@ -28,7 +28,7 @@ class BaseRepository(ABC, Generic[T]):
         Returns:
             Optional[T]: The instance if found, otherwise None.
         """
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def list(self) -> list[T]:
@@ -37,7 +37,7 @@ class BaseRepository(ABC, Generic[T]):
         Returns:
             list[T]: A list of all instances of the model.
         """
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def delete(self, entity_id: int) -> bool:
@@ -49,5 +49,5 @@ class BaseRepository(ABC, Generic[T]):
         Returns:
             Optional[bool]: True if the instance was deleted, False if the instance could not be found.
         """
-        pass
+        raise NotImplementedError()
 

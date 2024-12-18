@@ -96,14 +96,3 @@ class Util(ABC):
         #     if method[0] == method_name:
         #         return method
             
-    @abstractmethod
-    def __find_methods(classes) -> List[Tuple[str, str]]:
-        raise NotImplementedError
-        # implemented_methods = []
-        # for cls in classes:
-        #     for name in dir(cls):
-        #         attr = getattr(cls, name)
-        #         if inspect.isfunction(attr):
-        #             docstring = attr.__doc__
-        #             implemented_methods.append((name, docstring))
-        # return implemented_methods

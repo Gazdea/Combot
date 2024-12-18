@@ -20,10 +20,10 @@ class CommandDBServiceImpl(CommandDBService):
             return [CommandDTO.model_validate(command) for command in commands]
         return None
         
-    def get_command_by_chat_user_name(self, chat_id: int, user_id: int, command_name: str) -> Optional[CommandDTO]:
-        if command := self.repo.get_command_by_chat_user_name(chat_id, user_id, command_name):
+    def get_command_by_chat_user_command_name(self, chat_id: int, user_id: int, command_name: str) -> Optional[CommandDTO]:
+        if command := self.repo.get_command_by_chat_user_command_name(chat_id, user_id, command_name):
             return command
-        return None
+        raise Exception("Метод не найден")
 
     def get_commands_by_chat_user(self, chat_id: int, user_id: int) -> Optional[list[CommandDTO]]:
         if commands := self.repo.get_commands_by_chat_user(chat_id, user_id):

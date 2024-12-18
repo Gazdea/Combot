@@ -3,7 +3,7 @@ from telegram.ext import ContextTypes
 from app.bot.handler import Debug
 from app.bot.util import Util
 from app.db.service import ChatDBService
-from app.controller import __class_Controller
+from app.controller import all_controller
 
 class DebugImpl(Debug):
     
@@ -61,13 +61,13 @@ class DebugImpl(Debug):
             response.append("Нет упомянутых пользователей (кроме бота).")
 
         # Извлечение даты и времени из сообщения
-        extracted_date = await self.util.extract_datetime_from_message(update, context)
+        extracted_date = await self.util.extract_datetime_from_message(update)
         if extracted_date:
             response.append(f"Извлечённая дата и время: {extracted_date.strftime('%d.%m.%Y %H:%M')}")
         else:
             response.append("Дата и время не указаны или не распознаны.")
 
-        quotes = await self.util.get_quoted_text(update, context)
+        quotes = await self.util.get_quoted_text(update)
         # Извлечение вложенного текста в ""
         if quotes:
             response.append(f"Извлеченные данные из ковычек {quotes}")
@@ -77,11 +77,11 @@ class DebugImpl(Debug):
         # Проверка готовности методов
         if quotes and quotes[0] == "method":
             if len(quotes) == 1:
-                ready_methods = self.util.check_methods(__class_Controller, message.chat.id, message.from_user.id)
+                ready_methods = self.util.check_methods(all_controller, message.chat.id, message.from_user.id)
                 methods = [f"{method[0].command} => {method[0].method_name}\n- {method[1]}" for method in ready_methods]
                 response.append("\n".join(methods))
                 
-            elif len(quotes) == 2 and (method := self.util.method_search(__class_Controller, message.chat.id, message.from_user.id, quotes[1])):
+            elif len(quotes) == 2 and (method := self.util.method_search(all_controller, message.chat.id, message.from_user.id, quotes[1])):
                 method = f"{method[0]}\n- {method[1]}"
                 response.append(method)
             

@@ -2,9 +2,10 @@ import re
 from telegram import ChatPermissions, Update
 from telegram.ext import ContextTypes
 from app.db.model.DTO import MessageDTO, UserDTO
-from app.di import ServiceContainer, UtilContainer
+from app.di.ServiceDBContainer import ServiceDBContainer
+from app.di.UtilContainer import UtilContainer
 
-service_container = ServiceContainer
+service_container = ServiceDBContainer
 util_container = UtilContainer
 
 

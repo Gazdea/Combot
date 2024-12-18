@@ -5,7 +5,7 @@ from app.db.repository.baseImpl import CommandRepository, RoleRepository, RolePe
 from app.db.service import RolePermissionDBService
 
 class RolePermissionDBServiceImpl(RolePermissionDBService):
-    def __init__(self, command_repo: CommandRepository, role_repo: RoleRepository, role_permission_repo: RolePermissionRepository):
+    def __init__(self, role_permission_repo: RolePermissionRepository, command_repo: CommandRepository, role_repo: RoleRepository):
         self.command_repo = command_repo
         self.role_repo = role_repo
         self.role_permission_repo = role_permission_repo

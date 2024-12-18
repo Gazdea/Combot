@@ -1,11 +1,12 @@
 import re
 from app.db.model.DTO import MessageDTO, UserDTO
-from app.bot.handler.CommandHandler import CommandHandler
+from app.bot.handler.Handler import Handler
 from telegram import ChatPermissions, Update
 from telegram.ext import ContextTypes
 from app.db.service import CommandDBService, MutedUserDBService, UserDBService, ChatDBService, UserChatDBService, MessageDBService
+from app.controller import all_controller
 
-class CommandHandlerImpl(CommandHandler):
+class HandlerImpl(Handler):
     def __init__(self, command_service: CommandDBService, muted_user_service: MutedUserDBService, user_service: UserDBService, chat_service: ChatDBService, user_chat_service: UserChatDBService, message_service: MessageDBService):
         self.command_service = command_service
         self.muted_user_service = muted_user_service
@@ -18,7 +19,7 @@ class CommandHandlerImpl(CommandHandler):
         """Обработчик команд с делегированием в соответствующие методы"""
         message = update.message
         command_input = message.text.split()[0].split('@')[0]
-        command_method = self._get_command_method(command_input)
+        command_method = self._get_command_method(command_input, message.chat_id, message.from_user.id)
         if command_method:
             try:
                 await command_method(update, context)
@@ -29,10 +30,13 @@ class CommandHandlerImpl(CommandHandler):
 
     def _get_command_method(self, command_input: str, chat_id: int, user_id: int):
         """Находит метод, который нужно вызвать для команды"""
-        available_command = self.command_service.get_command_by_chat_user_name(chat_id, user_id, command_input)
-        return getattr(self, available_command.method_name, None)
+        available_command = self.command_service.get_command_by_chat_user_command_name(chat_id, user_id, command_input)
+        if not available_command:
+            raise ValueError(f"Команда {command_input} не найдена")
+        for module in all_controller:
+            if command_method := getattr(module, available_command.method_name, None):
+                return command_method
 
-  
     async def anti_spam_protection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Защита от спама: если пользователь отправляет больше max_messages за time_window секунд, он заглушается."""
         message = update.message

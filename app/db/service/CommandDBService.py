@@ -6,28 +6,28 @@ class CommandDBService(ABC):
 
     @abstractmethod
     def rename_command(self, chat_id: int, command_name: str, new_command_name: str) -> Optional[CommandDTO]:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_commands_by_chat(self, chat_id: int) -> Optional[list[CommandDTO]]:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
-    def get_command_by_chat_user_name(self, chat_id: int, user_id: int, command_name: str) -> Optional[CommandDTO]:
-        pass
+    def get_command_by_chat_user_command_name(self, chat_id: int, user_id: int, command_name: str) -> Optional[CommandDTO]:
+        raise NotImplementedError()
     
     @abstractmethod
     def get_commands_by_chat_user(self, chat_id: int, user_id: int) -> Optional[list[CommandDTO]]:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_commands_by_chat_role(self, chat_id: int, role_id: int) -> Optional[list[CommandDTO]]:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_commands_by_chat_roleName(self, chat_id: int, role_name: int) -> Optional[list[CommandDTO]]:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_command_by_chat_name(self, chat_id: int, command_name: str) -> Optional[CommandDTO]:
-        pass
+        raise NotImplementedError()

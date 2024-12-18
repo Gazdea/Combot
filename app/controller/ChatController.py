@@ -1,26 +1,27 @@
 from telegram import ChatPermissions, Update
 from telegram.ext import ContextTypes
 from app.db.model.DTO import MessageDTO, UserDTO
-from app.di import ServiceContainer, UtilContainer
+from app.di.ServiceBotContainer import ServiceBotContainer
+from app.di.ServiceDBContainer import ServiceDBContainer
+from app.di.UtilContainer import UtilContainer
 
-service_container = ServiceContainer
+service_db_container = ServiceDBContainer
+service_bot_container = ServiceBotContainer
 util_container = UtilContainer
 
 async def chat_user_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Отображает статистику присоединения пользователя к чату."""
-    user_chat_service = service_container.user_chat_service()
+    user_chat_db_service = service_db_container.user_chat_service()
+    chat_bot_service = service_bot_container.chat_bot_service()
     
-    message = update.message
-    user_chat = user_chat_service.get_stats_users_join(message.chat.id)
-    if not user_chat:
-        await message.reply_text("Пользователи не присоединились.")
-        return
-    await message.reply_text(f"За сегодня приспоединилось к чату: {user_chat}")
+    user_chat = user_chat_db_service.get_stats_users_join(update.message.chat.id)
+
+    chat_bot_service.chat_user_join()
 
 async def chat_user_active(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Отображает статистику активности пользователя в чате."""
     bot_util = util_container.bot_util()
-    message_service = service_container.message_service()
+    message_service = service_db_container.message_service()
     
     message = update.message
     users = await bot_util.get_mentioned_users(update, context)
@@ -34,7 +35,7 @@ async def chat_user_active(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def chat_spam_mute_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Устанавливает время мьюта за спам для чата."""
     bot_util = util_container.bot_util()
-    chat_service = service_container.chat_service()
+    chat_service = service_db_container.chat_service()
     
     message = update.message
     quotes = await bot_util.get_quoted_text(update, context)
@@ -49,7 +50,7 @@ async def chat_spam_mute_time(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def chat_spam_num_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Устанавливает количество сообщений для срабатывания антиспам защиты."""
     bot_util = util_container.bot_util()
-    chat_service = service_container.chat_service()
+    chat_service = service_db_container.chat_service()
     
     message = update.message
     quotes = await bot_util.get_quoted_text(update, context)
@@ -64,7 +65,7 @@ async def chat_spam_num_message(update: Update, context: ContextTypes.DEFAULT_TY
 async def chat_spam_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Устанавливает время, в течение которого считается количество сообщений для антиспам защиты."""
     bot_util = util_container.bot_util()
-    chat_service = service_container.chat_service()
+    chat_service = service_db_container.chat_service()
     
     message = update.message
     quotes = await bot_util.get_quoted_text(update, context)
@@ -79,7 +80,7 @@ async def chat_spam_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def chat_delete_pattern(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Устанавливает шаблон для автоматического удаления сообщений."""
     bot_util = util_container.bot_util()
-    chat_service = service_container.chat_service()
+    chat_service = service_db_container.chat_service()
     
     message = update.message
     quotes = await bot_util.get_quoted_text(update, context)

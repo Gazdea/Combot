@@ -14,8 +14,7 @@ class UtilImpl(Util):
     def __init__(self, user_service: UserDBService, command_service: CommandDBService):
         super().__init__()
         self.user_service = user_service
-        self.command_service = command_service
-        
+        self.command_service = command_service        
     
     async def get_mentioned_users(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> List[UserDTO]:
         """Получает ID всех упомянутых пользователей по @username в чате, кроме бота."""

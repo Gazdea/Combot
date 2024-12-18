@@ -8,20 +8,20 @@ class RolePermissionRepository(BaseRepository, ABC):
 
     @abstractmethod
     def save(self, role_permission: RolePermission) -> Optional[RolePermission]:
-        pass
+        raise NotImplementedError()
         
     @abstractmethod
     def get(self, role_permission: RolePermission) -> Optional[RolePermission]:
-        pass
+        raise NotImplementedError()
         
     @abstractmethod
     def list(self) -> List[RolePermission]:
-        pass
+        raise NotImplementedError()
         
     @abstractmethod
     def update(self, role_permission: RolePermission) -> Optional[RolePermission]:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def delete(self, role_permission: RolePermission) -> Optional[bool]:
-        pass
+        raise NotImplementedError()
