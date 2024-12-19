@@ -4,14 +4,13 @@ from telegram.ext import ContextTypes
 
 class CommandBotService(ABC):
     @abstractmethod
-    async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()
     
     @abstractmethod
-    async def command_rename(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def command_rename(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()
     
-
     @abstractmethod
-    async def commands_role(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def commands_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()

@@ -4,26 +4,26 @@ from telegram.ext import ContextTypes
 
 class RoleBotService(ABC):
     @abstractmethod
-    async def role_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def role_add(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()
     
     @abstractmethod
-    async def role_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def role_delete(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()
     
     @abstractmethod
-    async def role_command_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def role_command_add(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()
     
     @abstractmethod
-    async def role_command_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def role_command_delete(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()
     
     @abstractmethod
-    async def role_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def role_list(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()
     
     @abstractmethod
-    async def role_rename(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def role_rename(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         raise NotImplementedError()
     

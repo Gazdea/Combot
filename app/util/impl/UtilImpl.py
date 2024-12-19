@@ -8,6 +8,8 @@ from telegram.ext import ContextTypes
 from app.bot.util import Util
 from app.db.model.DTO import CommandDTO, UserDTO
 from app.db.service import UserDBService, CommandDBService
+from app.exception.businessExceptions import NotFoundUser
+from app.exception.validationExceptions import ValidationMentionUser
 
 class UtilImpl(Util):
 
@@ -28,7 +30,9 @@ class UtilImpl(Util):
                     if user != null:
                         mentioned_user.append(user)
                     else:
-                        await update.message.reply_text(f'Пользователь {username} не зарегистрирован.')
+                        raise NotFoundUser(f'Пользователь {username} не зарегистрирован.')
+        if not mentioned_user:
+            raise ValidationMentionUser
         return mentioned_user
 
     async def get_quoted_text(self, update: Update) -> List[str]:
@@ -36,7 +40,7 @@ class UtilImpl(Util):
         text = update.message.text
         return [text.split('"')[i] for i in range(1, len(text.split('"')), 2)]
 
-    async def extract_datetime_from_message(self, update: Update):
+    async def extract_datetime_from_message(self, update: Update) -> datetime:
         """Извлекает дату и/или время, указанные в сообщении."""
         current_date = datetime.now()
         datetime_patterns = [
