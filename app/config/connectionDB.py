@@ -2,11 +2,20 @@ import logging
 from typing import Generator
 from contextlib import contextmanager
 from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 import urllib.parse
 import os
 
-url = f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:{urllib.parse.quote_plus(os.getenv('POSTGRES_PASSWORD'))}@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
+postgres_user = os.getenv('POSTGRES_USER', 'default_user')
+postgres_password = os.getenv('POSTGRES_PASSWORD', 'default_password')
+postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
+postgres_port = os.getenv('POSTGRES_PORT', '5432')
+postgres_db = os.getenv('POSTGRES_DB', 'default_db')
+
+postgres_password = urllib.parse.quote_plus(postgres_password) if postgres_password else ''
+
+url = f"postgresql+psycopg2://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+
 engine = create_engine(url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -51,4 +60,8 @@ def get_session() -> Session:
     """
     return SessionLocal()
 
+def get_url() -> str:
+    return url
 
+def get_engine() -> Engine:
+    return engine

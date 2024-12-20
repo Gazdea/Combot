@@ -1,11 +1,11 @@
-from app.exception import ServerError, BusinessError, ValidationError, AuthenticationError, TelegramAPIError
+from app.exception import ServerError, BusinessError, ValidationError, AuthenticationError
 from telegram import Update
 from telegram.ext import ContextTypes
 import logging
 
 logger = logging.getLogger(__name__)
 
-async def global_error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def global_error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Глобальный обработчик ошибок.
     """

@@ -4,9 +4,8 @@ from app.db.model.DTO import CommandDTO
 from app.db.service import CommandDBService
 
 class CommandDBServiceImpl(CommandDBService):
-    def __init__(self, command_repo: CommandRepository, role_repo: RoleRepository):
+    def __init__(self, command_repo: CommandRepository):
         self.repo = command_repo
-        self.role_repo = role_repo
 
     def rename_command(self, chat_id: int, command_name: str, new_command_name: str) -> Optional[CommandDTO]:
         if command := self.repo.get_command_by_name(chat_id, command_name):
@@ -35,10 +34,10 @@ class CommandDBServiceImpl(CommandDBService):
             return [CommandDTO.model_validate(command) for command in commands]
         return None
     
-    def get_commands_by_chat_roleName(self, chat_id: int, role_name: int) -> Optional[list[CommandDTO]]:
-        if role := self.role_repo.get_role_by_role_name(chat_id, role_name):
-            if commands := self.repo.get_commands_by_chat_role(chat_id, role.id):
-                return [CommandDTO.model_validate(command) for command in commands]
+    def get_commands_by_chat_roleName(self, chat_id: int, role_name: str) -> Optional[list[CommandDTO]]:
+        # if role := self.role_repo.get_role_by_role_name(chat_id, role_name):
+        if commands := self.repo.get_commands_by_chat_role(chat_id, role_name):
+            return [CommandDTO.model_validate(command) for command in commands]
         return None
     
     def get_command_by_chat_name(self, chat_id: int, command_name: str) -> Optional[CommandDTO]:

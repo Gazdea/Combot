@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from app.db.model.Entity import Command
 
-from app.db.repository import BaseRepository
+from app.db.repository.BaseRepository import BaseRepository
 
 class CommandRepository(BaseRepository, ABC):
 
@@ -23,7 +23,7 @@ class CommandRepository(BaseRepository, ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_commands_by_chat_role(self, chat_id: int, role_id: int) -> List[Command]:
+    def get_commands_by_chat_role(self, chat_id: int, role_id: str) -> List[Command]:
         raise NotImplementedError()
         
     @abstractmethod

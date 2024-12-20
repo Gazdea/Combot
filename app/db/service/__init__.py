@@ -7,3 +7,15 @@ from .RolePermissionDBService import RolePermissionDBService
 from .RoleDBService import RoleDBService
 from .UserDBService import UserDBService
 from .UserChatDBService import UserChatDBService
+
+__all__ = [
+    "BannedUserDBService",
+    "ChatDBService",
+    "CommandDBService",
+    "MessageDBService",
+    "MutedUserDBService",
+    "RolePermissionDBService",
+    "RoleDBService",
+    "UserDBService",
+    "UserChatDBService"
+]

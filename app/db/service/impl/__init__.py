@@ -7,3 +7,15 @@ from .RolePermissionDBServiceImpl import RolePermissionDBServiceImpl
 from .RoleDBServiceImpl import RoleDBServiceImpl
 from .UserDBServiceImpl import UserDBServiceImpl
 from .UserChatDBServiceImpl import UserChatDBServiceImpl
+
+__all__ = [
+    "BannedUserDBServiceImpl",
+    "ChatDBServiceImpl",
+    "CommandDBServiceImpl",
+    "MessageDBServiceImpl",
+    "MutedUserDBServiceImpl",
+    "RolePermissionDBServiceImpl",
+    "RoleDBServiceImpl",
+    "UserDBServiceImpl",
+    "UserChatDBServiceImpl"
+]

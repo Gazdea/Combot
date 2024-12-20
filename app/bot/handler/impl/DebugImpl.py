@@ -1,7 +1,7 @@
 from telegram import Update, ChatMemberAdministrator, ChatMemberOwner
 from telegram.ext import ContextTypes
 from app.bot.handler import Debug
-from app.bot.util import Util
+from app.util import Util
 from app.db.service import ChatDBService
 from app.controller import all_controller
 
@@ -12,7 +12,7 @@ class DebugImpl(Debug):
         self.chat_service = chat_service
         self.util = util
       
-    async def debug(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def debug(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Проверка работоспособности бота и подключений."""
         message = update.message
         response = ["Запускаю проверку системы..."]

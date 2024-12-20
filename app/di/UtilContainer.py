@@ -8,6 +8,5 @@ from app.util.impl import (
 class UtilContainer(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(modules=["main"])
     
-    service_container = providers.Container(ServiceDBContainer)
     
-    util = providers.Factory(UtilImpl, service_container.user_service, service_container.command_service)
+    util = providers.Factory(UtilImpl)

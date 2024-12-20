@@ -1,4 +1,5 @@
 import re
+from typing import Any
 from app.db.model.DTO import MessageDTO, UserDTO
 from app.bot.handler.Handler import Handler
 from telegram import ChatPermissions, Update
@@ -15,7 +16,7 @@ class HandlerImpl(Handler):
         self.user_chat_service = user_chat_service
         self.message_service = message_service
     
-    async def get_method_from_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def get_method_from_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Обработчик команд с делегированием в соответствующие методы"""
         message = update.message
         command_input = message.text.split()[0].split('@')[0]
@@ -28,7 +29,7 @@ class HandlerImpl(Handler):
         else:
             await message.reply_text(f"Команда {command_input} вам не доступна.")
 
-    def _get_command_method(self, command_input: str, chat_id: int, user_id: int):
+    def _get_command_method(self, command_input: str, chat_id: int, user_id: int) -> Any:
         """Находит метод, который нужно вызвать для команды"""
         available_command = self.command_service.get_command_by_chat_user_command_name(chat_id, user_id, command_input)
         if not available_command:
@@ -37,7 +38,7 @@ class HandlerImpl(Handler):
             if command_method := getattr(module, available_command.method_name, None):
                 return command_method
 
-    async def anti_spam_protection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def anti_spam_protection(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Защита от спама: если пользователь отправляет больше max_messages за time_window секунд, он заглушается."""
         message = update.message
         if mute_user := self.muted_user_service.get_mute_user(
@@ -51,7 +52,7 @@ class HandlerImpl(Handler):
             )
 
 
-    async def remove_links(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def remove_links(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Удаляет сообщения, содержащие ссылки."""
         message = update.message
         chat_dto = self.chat_service.get_chat_by_id(message.chat.id)
@@ -60,7 +61,7 @@ class HandlerImpl(Handler):
             await context.bot.delete_message(message.chat.id, message.message_id)
 
 
-    async def welcome_new_member(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def welcome_new_member(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Приветствие новых пользователей в чате. Если бот добавлен в чат, добавляет информацию о чате и администраторах."""
         message = update.message
         bot_added = False
@@ -83,12 +84,12 @@ class HandlerImpl(Handler):
             await context.bot.send_message(message.chat.id, 'Для корректной работы с чатом не забудьте установить права администратора.')
 
 
-    async def save_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def save_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Сохранение сообщения"""
         message = update.message
         user = self.user_service.get_user_by_id(message.from_user.id)
-        if user.is_error():
-            await update.message.reply_text("Кто ты воин, дай как запишу тебя")
+        if not user:
+            await message.reply_text("Кто ты воин, дай как запишу тебя")
             self.user_service.add_user(UserDTO(id=message.from_user.id, username=message.from_user.username))
         user_chat = self.user_chat_service.get_user_chat(message.chat.id, message.from_user.id)
         if not user_chat:

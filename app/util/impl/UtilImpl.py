@@ -1,24 +1,20 @@
 from datetime import datetime, timedelta
 import inspect
 import re
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from sqlalchemy import null
 from telegram import Update
 from telegram.ext import ContextTypes
-from app.bot.util import Util
+from app.util import Util
 from app.db.model.DTO import CommandDTO, UserDTO
-from app.db.service import UserDBService, CommandDBService
 from app.exception.businessExceptions import NotFoundUser
 from app.exception.validationExceptions import ValidationMentionUser
 
 class UtilImpl(Util):
-
-    def __init__(self, user_service: UserDBService, command_service: CommandDBService):
+    def __init__(self) -> None:
         super().__init__()
-        self.user_service = user_service
-        self.command_service = command_service        
     
-    async def get_mentioned_users(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> List[UserDTO]:
+    async def get_mentioned_users(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> List[str]:
         """Получает ID всех упомянутых пользователей по @username в чате, кроме бота."""
         bot_username = (await context.bot.get_me()).username
         mentioned_user = []
@@ -26,11 +22,9 @@ class UtilImpl(Util):
             mentioned_usernames = re.findall(r'@(\w+)', update.message.text)
             for username in mentioned_usernames:
                 if username.lower() != bot_username.lower():
-                    user = self.user_service.get_user_by_username(username)
-                    if user != null:
-                        mentioned_user.append(user)
-                    else:
-                        raise NotFoundUser(f'Пользователь {username} не зарегистрирован.')
+                    mentioned_user.append(username)
+                else:
+                    raise NotFoundUser(f'Пользователь {username} это бот.')
         if not mentioned_user:
             raise ValidationMentionUser
         return mentioned_user
@@ -40,7 +34,7 @@ class UtilImpl(Util):
         text = update.message.text
         return [text.split('"')[i] for i in range(1, len(text.split('"')), 2)]
 
-    async def extract_datetime_from_message(self, update: Update) -> datetime:
+    async def extract_datetime_from_message(self, update: Update) -> Optional[datetime] | None:
         """Извлекает дату и/или время, указанные в сообщении."""
         current_date = datetime.now()
         datetime_patterns = [
@@ -83,28 +77,28 @@ class UtilImpl(Util):
 
         return current_date if time_deltas else None
 
-    def check_methods(self, classes, chat_id: int, user_id: int) -> List[Tuple[CommandDTO, Tuple[str, str]]]:
-        commands = self.command_service.get_commands_by_chat_user(chat_id, user_id)
-        if commands != null:
-            implemented_methods = self.__find_methods(classes)
-            implemented_methods_dict = {method[0]: method[1] for method in implemented_methods}
-            return [
-                (command, implemented_methods_dict.get(command.method_name, False))
-                for command in commands
-            ]
+    # def check_methods(self, classes, chat_id: int, user_id: int) -> List[Tuple[CommandDTO, Tuple[str, str]]]:
+    #     commands = self.command_service.get_commands_by_chat_user(chat_id, user_id)
+    #     if commands != null:
+    #         implemented_methods = self.__find_methods(classes)
+    #         implemented_methods_dict = {method[0]: method[1] for method in implemented_methods}
+    #         return [
+    #             (command, implemented_methods_dict.get(command.method_name, False))
+    #             for command in commands
+    #         ]
 
-    def method_search(self, classes, method_name: str) -> Tuple[str, str]:
-        implemented_methods = self.__find_methods(classes)
-        for method in implemented_methods:
-            if method[0] == method_name:
-                return method
+    # def method_search(self, classes, method_name: str) -> Tuple[str, str]:
+    #     implemented_methods = self.__find_methods(classes)
+    #     for method in implemented_methods:
+    #         if method[0] == method_name:
+    #             return method
             
-    def __find_methods(self, classes) -> List[Tuple[str, str]]:
-        implemented_methods = []
-        for cls in classes:
-            for name in dir(cls):
-                attr = getattr(cls, name)
-                if inspect.isfunction(attr):
-                    docstring = attr.__doc__
-                    implemented_methods.append((name, docstring))
-        return implemented_methods
+    # def __find_methods(self, classes) -> List[Tuple[str, str]]:
+    #     implemented_methods = []
+    #     for cls in classes:
+    #         for name in dir(cls):
+    #             attr = getattr(cls, name)
+    #             if inspect.isfunction(attr):
+    #                 docstring = attr.__doc__
+    #                 implemented_methods.append((name, docstring))
+    #     return implemented_methods

@@ -10,12 +10,12 @@ from app.di.UtilContainer import UtilContainer
 service_container = ServiceDBContainer
 util_container = UtilContainer
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Потешный старт"""
-    response = random.choice(start_responses)
-    await update.message.reply_text(response.format(username=update.message.from_user.username))
+    # response = random.choice(start_responses)
+    # await update.message.reply_text(response.format(username=update.message.from_user.username))
     
-async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Вывод информации о боте для админа."""
-    await update.message.reply_text(bot_info)
+    # await update.message.reply_text(bot_info)
 

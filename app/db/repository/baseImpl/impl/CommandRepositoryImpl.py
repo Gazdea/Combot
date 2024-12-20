@@ -46,13 +46,13 @@ class CommandRepositoryImpl(BaseRepositoryImpl[Command], CommandRepository):
         )
         return commands
 
-    def get_commands_by_chat_role(self, chat_id: int, role_id: int) -> List[Command]:
+    def get_commands_by_chat_role(self, chat_id: int, role_name: str) -> List[Command]:
         commands = (
             self.session.query(Command)
             .filter(Command.chat_id == chat_id)
             .join(RolePermission, RolePermission.command_id == Command.id)
             .join(Role, Role.id == RolePermission.role_id)
-            .filter(Role.id == role_id)
+            .filter(Role.role_name == role_name)
             .all()
         )
         return commands

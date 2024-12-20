@@ -9,12 +9,12 @@ service_container = ServiceDBContainer
 util_container = UtilContainer
 
 
-async def delete_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def delete_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Удаляет сообщение из чата."""
-    message = update.message
-    if message.reply_to_message:
-        await context.bot.delete_message(message.chat.id, message.message_id)
-        await context.bot.delete_message(message.chat.id, message.reply_to_message.message_id)
-    else:
-        await message.reply_text('Необходимо указать, какое сообщение вы хотите удалить.')
+    # message = update.message
+    # if message.reply_to_message:
+    #     await context.bot.delete_message(message.chat.id, message.message_id)
+    #     await context.bot.delete_message(message.chat.id, message.reply_to_message.message_id)
+    # else:
+    #     await message.reply_text('Необходимо указать, какое сообщение вы хотите удалить.')
 
