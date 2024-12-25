@@ -6,17 +6,17 @@ from sqlalchemy import Engine, create_engine
 import urllib.parse
 import os
 
-postgres_user = os.getenv('POSTGRES_USER', 'default_user')
-postgres_password = os.getenv('POSTGRES_PASSWORD', 'default_password')
+postgres_user = os.getenv('POSTGRES_USER', 'user')
+postgres_password = os.getenv('POSTGRES_PASSWORD', 'pass')
 postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
 postgres_port = os.getenv('POSTGRES_PORT', '5432')
-postgres_db = os.getenv('POSTGRES_DB', 'default_db')
+postgres_db = os.getenv('POSTGRES_DB', 'postgres')
 
 postgres_password = urllib.parse.quote_plus(postgres_password) if postgres_password else ''
 
 url = f"postgresql+psycopg2://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
 
-engine = create_engine(url)
+engine = create_engine(url, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @contextmanager

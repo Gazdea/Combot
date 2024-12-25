@@ -1,9 +1,12 @@
 from typing import List, Optional
+
+from app.config.log_execution import log_class
 from app.db.model.Entity import User
 from sqlalchemy.orm import Session
 from app.db.repository.baseImpl import UserRepository
 from app.db.repository.impl import BaseRepositoryImpl
 
+@log_class
 class UserRepositoryImpl(BaseRepositoryImpl[User], UserRepository):
     def __init__(self, session: Session):
         super().__init__(User, session)

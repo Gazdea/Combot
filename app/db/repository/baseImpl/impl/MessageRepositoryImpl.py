@@ -1,10 +1,13 @@
 from datetime import date
 from typing import List, Optional
+
+from app.config.log_execution import log_class
 from app.db.model.Entity import Message
 from app.db.repository.baseImpl import MessageRepository
 from sqlalchemy.orm import Session
 from app.db.repository.impl import BaseRepositoryImpl
 
+@log_class
 class MessageRepositoryImpl(BaseRepositoryImpl[Message], MessageRepository):
     def __init__(self, session: Session):
         super().__init__(Message, session)

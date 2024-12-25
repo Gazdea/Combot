@@ -1,10 +1,13 @@
 from datetime import datetime
 from typing import List, Optional
+
+from app.config.log_execution import log_class
 from app.db.model.Entity import MutedUser
 from app.db.repository.baseImpl import MutedUserRepository
 from sqlalchemy.orm import Session
 from app.db.repository.impl import BaseRepositoryImpl
 
+@log_class
 class MutedUserRepositoryImpl(BaseRepositoryImpl[MutedUser], MutedUserRepository):
     def __init__(self, session: Session):
         super().__init__(MutedUser, session)

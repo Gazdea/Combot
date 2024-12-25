@@ -60,7 +60,6 @@ bot_info = """
         Репозиторий: https://github.com/Gazdea/Combot
         """
         
-        
 args ={ "noArgs":"Нет аргументов",
         "argUsername":"Имя пользователя @username",
         "argDateTime":"Дата и время DD.MM.YYYY HH:MM  или 1m, 1h, 1d, 1w",

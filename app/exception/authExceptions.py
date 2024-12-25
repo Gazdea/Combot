@@ -5,7 +5,7 @@ class AuthenticationError(Exception):
     def __init__(self, message=None):
         super().__init__(message or self.default_message)
 
-class AuthorizationError(Exception):
+class PermissionError(AuthenticationError):
     """Ошибки авторизации."""
     default_message = "У вас нет прав для выполнения данной операции."
 

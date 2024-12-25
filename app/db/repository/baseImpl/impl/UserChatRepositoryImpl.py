@@ -1,10 +1,13 @@
 from datetime import date
 from typing import List, Optional
+
+from app.config.log_execution import log_class
 from app.db.model.Entity import UserChat
 from sqlalchemy.orm import Session
 from app.db.repository.baseImpl import UserChatRepository
 from app.db.repository.impl import BaseRepositoryImpl
 
+@log_class
 class UserChatRepositoryImpl(BaseRepositoryImpl[UserChat], UserChatRepository):
     def __init__(self, session: Session):
         super().__init__(UserChat, session)
@@ -17,6 +20,7 @@ class UserChatRepositoryImpl(BaseRepositoryImpl[UserChat], UserChatRepository):
             .first()
         ):
             self.session.delete(user_chat)
+            self.session.commit()
             return True
         return False
         

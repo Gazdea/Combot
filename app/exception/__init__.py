@@ -1,10 +1,10 @@
-from .authExceptions import AuthorizationError, AuthenticationError
+from .authExceptions import PermissionError, AuthenticationError
 from .businessExceptions import BusinessError, InvalidOperationError
 from .serverExceptions import ServerError, DatabaseConnectionError, TelegramAPIError
 from .validationExceptions import ValidationError
 
 __all__ = [
-    "AuthorizationError",
+    "PermissionError",
     "AuthenticationError",
     "BusinessError",
     "InvalidOperationError",
