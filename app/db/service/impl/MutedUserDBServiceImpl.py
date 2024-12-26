@@ -12,16 +12,21 @@ class MutedUserDBServiceImpl(MutedUserDBService):
         self.repo = mute_repo
 
     def add_mute_user(self, mute_user: MutedUsersDTO) -> Optional[MutedUsersDTO]:
-        if mute_user := self.repo.save(MutedUser(**mute_user.model_dump())):
+        if mute_user := self.repo.add(MutedUser(**mute_user.model_dump())):
             return MutedUsersDTO.model_validate(mute_user)
         return None
 
     def update_mute_user(self, mute_user: MutedUsersDTO) -> Optional[MutedUsersDTO]:
-        if mute_user := self.repo.save(MutedUser(**mute_user.model_dump())):
+        if mute_user := self.repo.add(MutedUser(**mute_user.model_dump())):
             return MutedUsersDTO.model_validate(mute_user)
         return None
 
-    def get_mute_user(self, user_id: int, chat_id: int) -> Optional[MutedUsersDTO]:
+    def get_mute_user(self, chat_id: int, user_id: int) -> Optional[MutedUsersDTO]:
         if mute_user := self.repo.get_user_mute_by_chat_user(chat_id, user_id):
+            return MutedUsersDTO.model_validate(mute_user)
+        return None
+
+    def get_active_mute_user(self, chat_id: int, user_id: int) -> Optional[MutedUsersDTO]:
+        if mute_user := self.repo.get_active_user_mute_by_chat_user(chat_id, user_id):
             return MutedUsersDTO.model_validate(mute_user)
         return None

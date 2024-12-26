@@ -1,5 +1,7 @@
 from datetime import date, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
+
+from sqlalchemy import Row
 
 from app.config.log_execution import log_class
 from app.db.model.Entity import Message
@@ -16,9 +18,10 @@ class MessageDBServiceImpl(MessageDBService):
     def get_stat_user_message(self, chat_id: int, user_id: int, date_start: date = date.today(), date_end: date = date.today() + timedelta(days=1)) -> Optional[int]:
         if message := self.repo.get_count_messages(chat_id, user_id, date_start, date_end):
             return message
-        raise NotFound
+        return 0
 
-    def get_stats_users_message(self, chat_id: int, users_ids: List[int], date_start: date = date.today(), date_end: date = date.today() + timedelta(days=1)) -> List[Dict[int, int]]:
+    def get_stats_users_message(self, chat_id: int, users_ids: List[int], date_start: date = date.today(), date_end: date = date.today() + timedelta(days=1)) -> \
+    list[dict[str, int]]:
         user_messages = []
         for user_id in users_ids:
             message_count = self.repo.get_count_messages(chat_id, user_id, date_start, date_end)
@@ -32,6 +35,13 @@ class MessageDBServiceImpl(MessageDBService):
         raise NotFound
 
     def save_message(self, message: MessageDTO) -> Optional[MessageDTO]:
-        if create_message := self.repo.save(Message(**message.model_dump())):
+        if create_message := self.repo.add(Message(**message.model_dump())):
             return MessageDTO.model_validate(create_message)
         raise NotFound
+
+    def get_top_users_by_message_count(self,
+                                       chat_id: int,
+                                       date_start: date = date.today(),
+                                       date_end: date = date.today() + timedelta(days=1)
+                                       ) -> list[Row[tuple[Any, Any]]]:
+        return self.repo.get_top_users_by_message_count(chat_id, date_start, date_end)

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from app.config.log_execution import log_class
 from app.db.model.DTO import UserDTO
@@ -21,7 +21,11 @@ class UserDBServiceImpl(UserDBService):
             return UserDTO.model_validate(user)
         return None
 
+    def get_users_by_usernames(self, usernames: List[str]) -> List[UserDTO]:
+        users = self.repo.get_users_by_usernames(usernames)
+        return [UserDTO.model_validate(user) for user in users]
+
     def add_user(self, user: UserDTO) -> Optional[UserDTO]:
-        if created_user := self.repo.save(User(**user.model_dump())):
+        if created_user := self.repo.add_if_not_exists(User(**user.model_dump())):
             return UserDTO.model_validate(created_user)
         return None

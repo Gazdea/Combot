@@ -3,7 +3,7 @@ from telegram.ext import ContextTypes
 
 from app.bot.util import unified_command
 from app.config import application
-from app.db.di import  get_chat_service
+from app.db.di import get_chat_service, get_user_service
 from app.bot import util
 from app.enum import Command
 
@@ -12,8 +12,9 @@ async def debug(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Проверка работоспособности бота и подключений."""
     message = update.message
     chat_service = get_chat_service()
+    user_service = get_user_service()
 
-    response = ["Запускаю проверку системы..."]
+    response = ["Запускаю проверку системы...", f"ID чата: {message.chat.id}"]
 
     # Проверка подключения к API Telegram
     try:
@@ -52,9 +53,10 @@ async def debug(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         response.append("Нет ответа на сообщение.")
 
     # Получение упомянутых пользователей, кроме бота
-    users = await util.get_mentioned_users(update, context)
-    if users:
-        response.append(f"Упомянутые пользователи (кроме бота): {', '.join([str(f'{user.id} {user.username}' ) for user in users])}")
+    usernames = await util.get_mentioned_usernames(update, context)
+    if usernames:
+
+        response.append(f"Упомянутые пользователи (кроме бота): {', '.join([str(f'{user_service.get_user_by_username(username).id} {username}' ) for username in usernames])}")
     else:
         response.append("Нет упомянутых пользователей (кроме бота).")
 

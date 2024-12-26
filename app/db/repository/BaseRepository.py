@@ -5,8 +5,21 @@ T = TypeVar('T')
 
 class BaseRepository(ABC, Generic[T]):
 
+
     @abstractmethod
-    def save(self, instance: T) -> Optional[T]:
+    def add_if_not_exists(self, instance: T) -> Optional[T]:
+        """Add an instance of the model if it does not already exist.
+
+        Args:
+            instance (T): The instance to add.
+
+        Returns:
+            Optional[T]: The added instance, or None if the instance already exists.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add(self, instance: T) -> Optional[T]:
         """Save or update an instance of the model.
         
         Args:
@@ -16,7 +29,19 @@ class BaseRepository(ABC, Generic[T]):
             Optional[T]: The saved instance, or None if the instance could not be saved.
         """
         raise NotImplementedError()
-    
+
+    @abstractmethod
+    def update(self, instance: T) -> Optional[T]:
+        """Update an instance of the model.
+
+        Args:
+            instance (T): The instance to update.
+
+        Returns:
+            Optional[T]: The updated instance, or None if the instance could not be updated.
+        """
+        raise NotImplementedError()
+
     @abstractmethod
     def get(self, entity_id: int) -> Optional[T]:
         """

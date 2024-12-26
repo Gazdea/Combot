@@ -12,12 +12,25 @@ class BaseRepositoryImpl(BaseRepository, Generic[T]):
         self.model = model
         self.session: Session = session
 
-    def save(self, instance: T) -> Optional[T]:
-        if instance := self.session.merge(instance):
+    def add_if_not_exists(self, instance: T) -> Optional[T]:
+        if not self.session.query(self.model).filter_by(id=instance.id).first():
+            self.session.add(instance)
             self.session.flush()
             self.session.commit()
             return instance
         return None
+
+    def add(self, instance: T) -> Optional[T]:
+        self.session.add(instance)
+        self.session.flush()
+        self.session.commit()
+        return instance
+
+    def update(self, instance: T) -> Optional[T]:
+        self.session.merge(instance)
+        self.session.flush()
+        self.session.commit()
+        return instance
 
     def get(self, entity_id: int) -> Optional[T]:
         return self.session.query(self.model).filter(self.model.id == entity_id).first()

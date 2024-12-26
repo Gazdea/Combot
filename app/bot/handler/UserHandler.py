@@ -8,8 +8,9 @@ from app.bot.util import unified_command
 from app.config import application
 from app.config.log_execution import log_execution
 from app.db import MutedUsersDTO, BanUserDTO
-from app.db.di import get_muted_user_service, get_user_service, get_banned_user_service, get_user_chat_service
-from app.enum import Command
+from app.db.di import get_muted_user_service, get_user_service, get_banned_user_service, get_user_chat_service, \
+    get_message_service
+from app.enum import Command, UserRole
 from app.exception.validationExceptions import ValidationMentionUser, ValidationDatetime, ValidationQuotedText
 import pytz
 
@@ -22,7 +23,7 @@ async def user_mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     message = update.message
 
-    usernames = await util.get_mentioned_users(update, context)
+    usernames = await util.get_mentioned_usernames(update, context)
     if not usernames:
         raise ValidationMentionUser
 
@@ -32,12 +33,16 @@ async def user_mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     quotes = await util.get_quoted_text(update)
     if not quotes:
-        raise ValidationQuotedText
+        quotes = ["замучен без причины"]
 
     for username in usernames:
         user = user_service.get_user_by_username(username)
         if not user:
             await message.reply_text(f'Пользователь {username} не найден.')
+            continue
+
+        if user.id == message.from_user.id:
+            await message.reply_text('Хорошая попытка но ты так не можешь)')
             continue
 
         muted_user_service.add_mute_user(MutedUsersDTO(user_id=user.id, chat_id=message.chat.id, time_end=mute_until, reason=quotes[0]))
@@ -58,7 +63,7 @@ async def user_unmute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     message = update.message
 
-    usernames = await util.get_mentioned_users(update, context)
+    usernames = await util.get_mentioned_usernames(update, context)
     if not usernames:
         raise ValidationMentionUser
 
@@ -70,6 +75,10 @@ async def user_unmute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         user = user_service.get_user_by_username(username)
         if not user:
             await message.reply_text(f'Пользователь {username} не найден.')
+            continue
+
+        if user.id == message.from_user.id:
+            await message.reply_text('Хорошая попытка но ты так не можешь)')
             continue
 
         muted_user_service.add_mute_user(MutedUsersDTO(user_id=user.id, chat_id=message.chat.id, time_end=datetime.now(pytz.utc), reason=quotes[0]))
@@ -89,18 +98,22 @@ async def user_kick(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_service = get_user_service()
 
     message = update.message
-    usernames = await util.get_mentioned_users(update, context)
+    usernames = await util.get_mentioned_usernames(update, context)
     if not usernames:
         raise ValidationMentionUser
 
     quotes = await util.get_quoted_text(update)
     if not quotes:
-        raise ValidationQuotedText
+        quotes = ["выгнан без причины"]
 
     for username in usernames:
         user = user_service.get_user_by_username(username)
         if not user:
             await message.reply_text(f'Пользователь {username} не найден.')
+            continue
+
+        if user.id == message.from_user.id:
+            await message.reply_text('Хорошая попытка но ты так не можешь)')
             continue
 
         banned_user_service.add_ban_user(BanUserDTO(user_id=user.id, chat_id=message.chat.id, time_end=datetime.now(pytz.utc), reason=quotes[0]))
@@ -115,7 +128,7 @@ async def user_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_service = get_user_service()
     message = update.message
 
-    usernames = await util.get_mentioned_users(update, context)
+    usernames = await util.get_mentioned_usernames(update, context)
     if not usernames:
         raise ValidationMentionUser
 
@@ -125,12 +138,16 @@ async def user_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     quotes = await util.get_quoted_text(update)
     if not quotes:
-        raise ValidationQuotedText
+        quotes = ["забанен без причины"]
 
     for username in usernames:
         user = user_service.get_user_by_username(username)
         if not user:
             await message.reply_text(f'Пользователь {username} не найден.')
+            continue
+
+        if user.id == message.from_user.id:
+            await message.reply_text('Хорошая попытка но ты так не можешь)')
             continue
 
         banned_user_service.add_ban_user(BanUserDTO(user_id=user.id, chat_id=message.chat.id, time_end=mute_until, reason=quotes[0]))
@@ -145,7 +162,7 @@ async def user_unban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     user_service = get_user_service()
 
     message = update.message
-    usernames = await util.get_mentioned_users(update, context)
+    usernames = await util.get_mentioned_usernames(update, context)
     if not usernames:
         raise ValidationMentionUser
 
@@ -159,6 +176,10 @@ async def user_unban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             await message.reply_text(f'Пользователь {username} не найден.')
             continue
 
+        if user.id == message.from_user.id:
+            await message.reply_text('Хорошая попытка но ты так не можешь)')
+            continue
+
         banned_user_service.update_ban_user(BanUserDTO(user_id=user.id, chat_id=message.chat.id, time_end=datetime.now(pytz.utc), reason=quotes[0]))
         await context.bot.unban_chat_member(chat_id=message.chat.id, user_id=user.id)
         await message.reply_text(f'Пользователь {user.username} разбанен.')
@@ -169,12 +190,13 @@ async def user_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Получает информацию о пользователе в чате."""
     user_chat_service = get_user_chat_service()
     user_service = get_user_service()
+    message_service = get_message_service()
 
     message = update.message
 
-    usernames = await util.get_mentioned_users(update, context)
+    usernames = await util.get_mentioned_usernames(update, context)
     if not usernames:
-        raise ValidationMentionUser
+        usernames = [message.from_user.username]
 
     for username in usernames:
         user = user_service.get_user_by_username(username)
@@ -183,8 +205,11 @@ async def user_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             continue
 
         user_chat = user_chat_service.get_user_chat(message.chat.id, user.id)
-
-        await message.reply_text(f"Информация о {user.username}.\nПрисоединился: {user_chat.join_date}\nРоль: {user_chat.role}")
+        messages = message_service.get_stat_user_message(message.chat.id, user.id)
+        await message.reply_text(f"Информация о {user.username}.\n"
+                                 f"Присоединился: {user_chat.join_date}\n"
+                                 f"Роль: {user_chat.role.value}\n"
+                                 f"Сообщений за сегодня: {messages}\n")
 
 @unified_command(app=application, command=Command.USER_ROLE)
 @log_execution
@@ -195,18 +220,36 @@ async def user_role(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
     message = update.message
 
-    usernames = await util.get_mentioned_users(update, context)
+    usernames = await util.get_mentioned_usernames(update, context)
     if not usernames:
-        raise ValidationMentionUser
+        user_chat = user_chat_service.get_user_chat(message.chat_id, message.from_user.id)
+        await message.reply_text(f"Ваша роль: {user_chat.role.value}")
+        return
 
-    quotes = await util.get_quoted_text(update, context)
+    quotes = await util.get_quoted_text(update)
+
     if not quotes:
-        raise ValidationQuotedText
+        for username in usernames:
+            user = user_service.get_user_by_username(username)
+            if not user:
+                await message.reply_text(f'Пользователь {username} не найден.')
+                continue
+            user_chat = user_chat_service.get_user_chat(message.chat_id, user.id)
+            await message.reply_text(f"Роль пользователя {user.username}: {user_chat.role.value}")
+        return
+
+    if quotes[0].upper() not in UserRole:
+        raise ValidationQuotedText("Укажите роль. user, moderator, admin, guest")
 
     for username in usernames:
         user = user_service.get_user_by_username(username)
         if not user:
             await message.reply_text(f'Пользователь {username} не найден.')
             continue
-        user_chat_service.set_user_role(message.chat.id, user.id, quotes[0])
+
+        if user.id == message.from_user.id:
+            await message.reply_text('Хорошая попытка но ты так не можешь)')
+            continue
+
+        user_chat_service.set_user_role(message.chat.id, user.id, quotes[0].upper())
         await message.reply_text("Роль назначена пользователю.")

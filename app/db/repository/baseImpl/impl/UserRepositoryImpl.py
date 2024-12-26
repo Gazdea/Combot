@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from app.config.log_execution import log_class
 from app.db.model.Entity import User
@@ -15,5 +15,8 @@ class UserRepositoryImpl(BaseRepositoryImpl[User], UserRepository):
     def get_user_by_username(self, username: str) -> Optional[User]:
         return self.session.query(User).filter(User.username == username).first()
         
-    def get_users(self, users_ids: List[int]) -> List[User]:
+    def get_users(self, users_ids: List[int]) -> list[Type[User]]:
         return self.session.query(User).filter(User.id.in_(users_ids)).all()
+
+    def get_users_by_usernames(self, usernames: List[str]) -> list[Type[User]]:
+        return self.session.query(User).filter(User.username.in_(usernames)).all()

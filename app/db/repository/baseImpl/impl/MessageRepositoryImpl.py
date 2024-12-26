@@ -1,5 +1,7 @@
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, Any, Type
+
+from sqlalchemy import Row, between, func
 
 from app.config.log_execution import log_class
 from app.db.model.Entity import Message
@@ -13,7 +15,7 @@ class MessageRepositoryImpl(BaseRepositoryImpl[Message], MessageRepository):
         super().__init__(Message, session)
         self.session: Session = session
 
-    def get_messages(self, chat_id: int, user_id: int) -> List[Message]:
+    def get_messages(self, chat_id: int, user_id: int) -> list[Type[Message]]:
         messages = self.session.query(Message).filter(Message.chat_id == chat_id, Message.user_id == user_id).all()
         return messages
         
@@ -21,7 +23,20 @@ class MessageRepositoryImpl(BaseRepositoryImpl[Message], MessageRepository):
         message = self.session.query(Message).filter(
             Message.chat_id == chat_id, 
             Message.user_id == user_id, 
-            Message.date >= date_start, 
-            Message.date <= date_end
+            between(Message.date, date_start, date_end)
         ).count()
         return message
+
+    def get_top_users_by_message_count(self, chat_id: int, date_start: date, date_end: date) -> List[
+        Row[tuple[Any, Any]]]:
+        return self.session.query(
+            Message.user_id,
+            func.count(Message.id).label('message_count')
+        ).filter(
+            Message.chat_id == chat_id,
+            between(Message.date, date_start, date_end)
+        ).group_by(
+            Message.user_id
+        ).order_by(
+            func.count(Message.id).desc()
+        ).all()

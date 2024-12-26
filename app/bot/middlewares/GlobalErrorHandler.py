@@ -1,3 +1,5 @@
+import httpx
+
 from app.exception import ServerError, BusinessError, ValidationError, AuthenticationError
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -16,24 +18,25 @@ async def global_error_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     if isinstance(exception, ServerError):
         message = "Ошибка на сервере. Попробуйте позже."
     elif isinstance(exception, BusinessError):
-        message = f"Ошибка бизнес-логики: {exception}"
+        message = f"Ошибка бизнес-логики:\n{exception}"
     elif isinstance(exception, ValidationError):
-        message = f"Ошибка валидации данных: {exception}"
+        message = f"Ошибка валидации данных:\n{exception}"
     elif isinstance(exception, AuthenticationError):
         message = "Ошибка авторизации. Проверьте свои права доступа."
+    elif isinstance(exception, httpx.ReadError):
+        logger.exception("Ошибка с связью: возможно ложная ошибка", exc_info=exception)
     else:
         logger.exception("Произошла неизвестная ошибка", exc_info=exception)
-    
-        # Логируем ошибку
+
     logger.error(f"Ошибка: {exception} | Update: {update}")
-    
-    # Отправляем сообщение пользователю, если есть обновление
+
     if update and update.message:
         try:
             await update.message.reply_text(message)
         except Exception as send_error:
             logger.error(f"Ошибка при отправке сообщения: {send_error}")
 
-    # Опционально: отправить уведомление администратору
-    # admin_chat_id = 123456789
-    # await context.bot.send_message(chat_id=admin_chat_id, text=f"Ошибка: {exception}")
+
+    # admins = await context.bot.get_chat_administrators(update.message.chat.id)
+    # for admin in admins:
+    #     await admin.user.send_message(f"Ошибка: {exception}")

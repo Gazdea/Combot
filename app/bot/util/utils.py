@@ -5,7 +5,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 import pytz
 
-async def get_mentioned_users(update: Update, context: ContextTypes.DEFAULT_TYPE) -> List[str]:
+async def get_mentioned_usernames(update: Update, context: ContextTypes.DEFAULT_TYPE) -> List[str]:
     """Получает username всех упомянутых пользователей по @username в чате, кроме бота."""
     bot_username = (await context.bot.get_me()).username
     mentioned_user = []
@@ -30,7 +30,7 @@ async def extract_datetime_from_message(update: Update) -> Optional[datetime] | 
         r"(\d{2}[./:]\d{2})",  # только время чч:мм
     ]
 
-    time_deltas = re.findall(r"(\d+)([hmdw])", update.message.text)
+    time_deltas = re.findall(r"([-+]?\d+)([hmdw])", update.message.text)
     for amount, unit in time_deltas:
         amount = int(amount)
         if unit == 'h':

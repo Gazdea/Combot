@@ -6,7 +6,9 @@ from telegram.ext import CallbackContext, Application, CommandHandler, MessageHa
 
 from app.config.log_execution import log_execution
 from app.db.di import get_user_chat_service
-from app.enum.Enums import Command, COMMAND_ACCESS
+from app.enum.Enums import Command
+from app.exception import AuthenticationError
+
 
 @log_execution
 def command_access_control(command: Command):
@@ -21,13 +23,9 @@ def command_access_control(command: Command):
             user_chat = user_chat_db_service.get_user_chat(
                 update.effective_chat.id, update.effective_user.id
             )
-            allowed_roles = COMMAND_ACCESS.get(command, [])
+            allowed_roles =  command.allowed_roles
             if user_chat.role not in allowed_roles:
-                await context.bot.send_message(
-                    chat_id=update.effective_chat.id,
-                    text=f"У вас нет прав на выполнение команды {command.value}."
-                )
-                return
+                raise AuthenticationError(f"У вас нет доступа к {command.value} команде.")
             return await func(update, context, *args, **kwargs)
         return wrapper
     return decorator
@@ -40,8 +38,9 @@ def register_command(app: Application, command: Command):
     :param command: Команда, для которой регистрируется хендлер.
     """
     def decorator(func):
-        handler = CommandHandler(command.value, func)
-        app.add_handler(handler)
+        for cmd in command.triggers:
+            handler = CommandHandler(cmd, func)
+            app.add_handler(handler)
         return func
     return decorator
 

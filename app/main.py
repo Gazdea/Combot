@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 def __main__():
     # Регистрация обработчиков
-
     application.add_error_handler(global_error_handler)
     # Запуск бота
     application.run_polling()

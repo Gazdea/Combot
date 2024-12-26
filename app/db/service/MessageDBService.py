@@ -20,3 +20,7 @@ class MessageDBService(ABC):
     @abstractmethod
     def save_message(self, message: MessageDTO) -> Optional[MessageDTO]:
         raise NotImplementedError
+
+    @abstractmethod
+    def get_top_users_by_message_count(self, chat_id: int, date_start: date = date.today(), date_end: date = date.today() + timedelta(days=1)) -> List[Dict[int, int]]:
+        raise NotImplementedError

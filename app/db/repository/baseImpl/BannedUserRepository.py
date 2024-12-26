@@ -18,4 +18,3 @@ class BannedUserRepository(BaseRepository, ABC):
     @abstractmethod
     def get_user_ban_by_chat_user(self, chat_id: int, user_id: int, start_time: datetime, end_time: datetime) -> Optional[BanUser]:
         raise NotImplementedError()
-        
