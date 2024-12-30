@@ -13,3 +13,7 @@ class UserRepository(BaseRepository, ABC):
     @abstractmethod
     def get_users(self, users_ids: List[int]) -> List[User]:
         raise NotImplementedError()
+
+    @abstractmethod
+    def get_users_by_usernames(self, usernames: List[str]) -> List[User]:
+        raise NotImplementedError()

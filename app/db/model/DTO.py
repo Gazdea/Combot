@@ -2,48 +2,11 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, model_validator
 import logging
+
+from app.enum import UserRole
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-class RoleDTO(BaseModel):
-    id: Optional[int] = None
-    role_name: str
-    chat_id: int
-    
-    class Config:
-        from_attributes = True
-
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to RoleDTO: {values}")
-        return values
-    
-class CommandDTO(BaseModel):
-    id: Optional[int] = None
-    command: str
-    method_name: str
-    description: str
-    chat_id: int
-    
-    class Config:
-        from_attributes = True
-    
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to CommandDTO: {values}")
-        return values
-    
-class RolePermissionDTO(BaseModel):
-    role_id: int
-    command_id: int
-    
-    class Config:
-        from_attributes = True
-
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to RolePermissionDTO: {values}")
-        return values
     
 class UserDTO(BaseModel):
     id: int
@@ -52,24 +15,14 @@ class UserDTO(BaseModel):
     class Config:
         from_attributes = True
 
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to UserDTO: {values}")
-        return values
-    
 class UserChatDTO(BaseModel):
     user_id: int
     chat_id: int
-    role_id: int
+    role: UserRole
     join_date: datetime
     
     class Config:
         from_attributes = True
-
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to UserChatDTO: {values}")
-        return values
     
 class MessageDTO(BaseModel):
     id: Optional[int] = None
@@ -81,11 +34,6 @@ class MessageDTO(BaseModel):
     
     class Config:
         from_attributes = True
-
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to MessageDTO: {values}")
-        return values
     
 class ChatDTO(BaseModel):
     id: int
@@ -97,11 +45,6 @@ class ChatDTO(BaseModel):
     
     class Config:
         from_attributes = True
-
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to ChatDTO: {values}")
-        return values
     
 class MutedUsersDTO(BaseModel):
     id: Optional[int] = None
@@ -113,10 +56,6 @@ class MutedUsersDTO(BaseModel):
     class Config:
         from_attributes = True
 
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to MutedUsersDTO: {values}")
-        return values
     
 class BanUserDTO(BaseModel):
     id: Optional[int] = None
@@ -128,9 +67,4 @@ class BanUserDTO(BaseModel):
     class Config:
         from_attributes = True
 
-    @model_validator(mode="before")
-    def log_mapping(cls, values):
-        logger.info(f"Mapping values to BanUserDTO: {values}")
-        return values
-    
 model_config = ConfigDict(from_attributes=True)

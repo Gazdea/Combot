@@ -18,3 +18,7 @@ class MutedUserRepository(BaseRepository, ABC):
     @abstractmethod
     def get_user_mute_by_chat_user(self, chat_id: int, user_id: int, start_time: datetime, end_time: datetime) -> Optional[MutedUser]:
         raise NotImplementedError()
+
+    @abstractmethod
+    def get_active_user_mute_by_chat_user(self, chat_id: int, user_id: int) -> Optional[MutedUser]:
+        raise NotImplementedError()

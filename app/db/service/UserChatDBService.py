@@ -14,11 +14,11 @@ class UserChatDBService(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def set_user_role(self, chat_id: int, user_id: int, role_name: str) -> Optional[UserChatDTO]:
+    def set_user_role(self, chat_id: int, user_id: int, role: str) -> Optional[UserChatDTO]:
         raise NotImplementedError()
 
     @abstractmethod
-    def add_user_by_chat(self, user_id: int, chat_id: int, role_name: str, join_date: datetime) -> Optional[UserChatDTO]:
+    def add_user_by_chat(self, user_id: int, chat_id: int, role: str, join_date: datetime) -> Optional[UserChatDTO]:
         raise NotImplementedError()
 
     @abstractmethod        

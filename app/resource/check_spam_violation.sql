@@ -17,16 +17,14 @@ BEGIN
 
     IF (SELECT COUNT(*) FROM messages
         WHERE user_id = NEW.user_id
-        AND chat_id = NEW.chat_id
-        AND date > (last_message_time - INTERVAL '1 second' * time_window)
-       ) >= max_messages THEN
-        
+          AND chat_id = NEW.chat_id
+          AND date > (last_message_time - INTERVAL '1 second' * time_window)) >= max_messages THEN
+
         INSERT INTO muted_users (user_id, chat_id, time_end, reason)
-        VALUES (NEW.user_id, NEW.chat_id, last_message_time + INTERVAL '1 second' * mute_duration, 'Spamming')
-        ON CONFLICT (user_id, chat_id) DO UPDATE
-        SET time_end = last_message_time + INTERVAL '1 second' * mute_duration;
+        VALUES (NEW.user_id, NEW.chat_id, last_message_time + INTERVAL '1 minute' * mute_duration, 'Spamming');
     END IF;
+
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$; LANGUAGE plpgsql;
 
